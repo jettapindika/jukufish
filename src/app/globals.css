@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Cal Sans";
+  src: url("/fonts/CalSans-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-primary: #242424;
+  --color-primary-light: #444444;
+  --color-primary-dark: #111111;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #0099ff;
+
+  --color-fresh: #22C55E;
+  --color-warning: #F59E0B;
+  --color-critical: #EF4444;
+
+  --color-background: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-foreground: #242424;
+  --color-muted: #898989;
+  --color-border: rgba(34, 42, 53, 0.08);
+
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+
+  --shadow-card: rgba(19, 19, 22, 0.7) 0px 1px 5px -4px,
+    rgba(34, 42, 53, 0.08) 0px 0px 0px 1px,
+    rgba(34, 42, 53, 0.05) 0px 4px 8px 0px;
+  --shadow-button: rgba(34, 42, 53, 0.08) 0px 0px 0px 1px,
+    rgba(34, 42, 53, 0.05) 0px 4px 8px 0px;
+  --shadow-inset: rgba(255, 255, 255, 0.15) 0px 2px 0px inset;
+}
+
+.dark {
+  --color-primary: #FAFAFA;
+  --color-primary-light: #E0E0E0;
+  --color-primary-dark: #CCCCCC;
+  --color-on-primary: #111111;
+
+  --color-accent: #3BAAFF;
+
+  --color-fresh: #4ADE80;
+  --color-warning: #FBBF24;
+  --color-critical: #F87171;
+
+  --color-background: #0F0F0F;
+  --color-surface: #171717;
+  --color-foreground: #FAFAFA;
+  --color-muted: #898989;
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  --shadow-card: rgba(0, 0, 0, 0.5) 0px 1px 5px -4px,
+    rgba(255, 255, 255, 0.06) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.3) 0px 4px 8px 0px;
+  --shadow-button: rgba(255, 255, 255, 0.06) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.3) 0px 4px 8px 0px;
+  --shadow-inset: rgba(255, 255, 255, 0.08) 0px 2px 0px inset;
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --font-sans: var(--font-inter);
+  --font-display: "Cal Sans", var(--font-inter);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes freshness-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.freshness-critical {
+  animation: freshness-pulse 2s ease-in-out infinite;
+}
