@@ -11,6 +11,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Juku - Inventori Ikan Paotere",
   description: "Sistem pencatatan inventori ikan cold storage Pelabuhan Paotere, Makassar",
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
@@ -30,6 +31,13 @@ export default function RootLayout({
     <html lang="id" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-[var(--color-background)]">
         {children}
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+          }
+        ` }} />
       </body>
     </html>
   );

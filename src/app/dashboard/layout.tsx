@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Wifi } from "lucide-react";
+import { Moon, Sun, Check, LogOut } from "lucide-react";
 import { useFishStore } from "@/lib/store";
-import { useOnlineStatus } from "@/hooks/use-online-status";
-import { SyncProvider } from "@/components/sync-provider";
 import { BottomNav } from "@/components/bottom-nav";
+import { OnlineBadge } from "@/components/online-badge";
+import { SyncProvider } from "@/components/sync-provider";
 
 export default function DashboardLayout({
   children,
@@ -15,107 +15,104 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const currentUser = useFishStore((s) => s.currentUser);
-  const isOnline = useOnlineStatus();
-  const [hydrated, setHydrated] = useState(false);
+  const currentRole = useFishStore((s) => s.currentRole);
+  const darkMode = useFishStore((s) => s.darkMode);
+  const syncToast = useFishStore((s) => s.syncToast);
+  const toggleDarkMode = useFishStore((s) => s.toggleDarkMode);
+  const logout = useFishStore((s) => s.logout);
+  const setSyncToast = useFishStore((s) => s.setSyncToast);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     const unsub = useFishStore.persist.onFinishHydration(() => {
-      setHydrated(true);
+      setIsHydrated(true);
     });
     if (useFishStore.persist.hasHydrated()) {
-      setHydrated(true);
+      setIsHydrated(true);
     }
-    return unsub;
+    return () => { unsub(); };
   }, []);
 
   useEffect(() => {
-    if (hydrated && !currentUser) {
+    if (isHydrated && !currentUser) {
       router.replace("/");
     }
-  }, [hydrated, currentUser, router]);
+  }, [isHydrated, currentUser, router]);
 
-  if (!hydrated || !currentUser) {
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
+
+  const isToastVisible = syncToast !== null && Date.now() - syncToast.timestamp < 5000;
+
+  const dismissToast = useCallback(() => {
+    setSyncToast(null);
+  }, [setSyncToast]);
+
+  useEffect(() => {
+    if (!syncToast) return;
+    const timer = setTimeout(dismissToast, 5000);
+    return () => clearTimeout(timer);
+  }, [syncToast, dismissToast]);
+
+  if (!isHydrated) {
     return (
-      <div
-        className="flex min-h-dvh items-center justify-center"
-        style={{ backgroundColor: "#FDF8F8" }}
-      >
-        <div className="h-1 w-16 overflow-hidden rounded-full bg-[var(--color-border)]">
-          <div className="h-full w-1/2 animate-pulse rounded-full bg-[#242424]" />
-        </div>
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--color-background)]">
+        <div className="h-8 w-8 animate-spin rounded-full border-3 border-[var(--color-border)] border-t-[var(--color-primary)]" />
       </div>
     );
   }
 
+  if (!currentUser || !currentRole) return null;
+
   return (
-    <SyncProvider>
-      <div
-        className="relative min-h-dvh"
-        style={{ backgroundColor: "#FDF8F8" }}
-      >
-        <header
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
-          style={{
-            height: 64,
-            paddingLeft: 16,
-            paddingRight: 16,
-            backgroundColor: "#FDF8F8",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: '"Cal Sans", system-ui, sans-serif',
-              fontSize: 24,
-              fontWeight: 700,
-              color: "#1C1B1B",
-            }}
-          >
-            JUKU
+    <div className="flex min-h-dvh flex-col bg-[var(--color-background)] font-sans">
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-extrabold text-[var(--color-primary)]" style={{ fontFamily: '"Cal Sans", var(--font-inter)' }}>
+            Juku
           </span>
+          {currentUser && (
+            <span className="text-xs text-[var(--color-muted)] font-medium hidden sm:inline">
+              {currentUser.name}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleDarkMode}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-background)] text-[var(--color-foreground)] transition-colors"
+            aria-label={darkMode ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <OnlineBadge />
+          <button
+            type="button"
+            onClick={() => { logout(); router.replace("/"); }}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-background)] text-[var(--color-muted)] transition-colors"
+            aria-label="Keluar"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+      </header>
 
-          <div className="flex items-center" style={{ gap: 12 }}>
-            <div className="flex items-center" style={{ gap: 4 }}>
-              <Wifi
-                size={16}
-                color={isOnline ? "#10B981" : "#898989"}
-                strokeWidth={2}
-              />
-              <span
-                style={{
-                  fontSize: 16,
-                  fontWeight: 400,
-                  color: isOnline ? "#10B981" : "#898989",
-                }}
-              >
-                {isOnline ? "Online" : "Offline"}
-              </span>
-            </div>
-
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 12,
-                backgroundColor: "#DFE0E0",
-                flexShrink: 0,
-              }}
-            />
-          </div>
-        </header>
-
-        <main
-          style={{
-            paddingTop: 80,
-            paddingBottom: 100,
-            paddingLeft: 16,
-            paddingRight: 16,
-          }}
-        >
+      <SyncProvider>
+        <main className="flex-1 pt-14 pb-20">
           {children}
         </main>
+      </SyncProvider>
 
-        <BottomNav />
-      </div>
-    </SyncProvider>
+      {isToastVisible && syncToast && (
+        <div className="fixed bottom-20 left-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-[var(--color-fresh)] p-3 shadow-lg">
+          <Check size={16} className="shrink-0 text-white" />
+          <span className="text-sm font-semibold text-white">{syncToast.message}</span>
+        </div>
+      )}
+
+      <BottomNav role={currentRole} />
+    </div>
   );
 }

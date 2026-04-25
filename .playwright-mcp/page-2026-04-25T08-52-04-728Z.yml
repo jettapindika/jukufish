@@ -1,0 +1,24 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - button [ref=e29]:
+      - img [ref=e30]
+    - generic [ref=e15]:
+      - heading "Login di Juku" [level=1] [ref=e85]
+      - paragraph [ref=e33]: Masukkan data diri yang sudah di daftarkan.
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: Email
+          - textbox "contoh@email.com" [ref=e86]
+        - generic [ref=e87]:
+          - generic [ref=e88]: PIN
+          - generic [ref=e89]:
+            - textbox "••••••" [ref=e90]
+            - button [ref=e92]:
+              - img [ref=e93]
+        - button "Masuk" [ref=e97]
+      - paragraph [ref=e83]:
+        - text: Belum punya akun?
+        - button "Daftar" [active] [ref=e98]
+  - button "Open Next.js Dev Tools" [ref=e24] [cursor=pointer]:
+    - img [ref=e25]
+  - alert [ref=e28]
