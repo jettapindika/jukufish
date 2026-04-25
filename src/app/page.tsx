@@ -96,7 +96,7 @@ export default function WelcomePage() {
           </PrimaryButton>
         </div>
         <div className="w-full" style={{ maxWidth: 358 }}>
-          <GhostButton onClick={() => {}}>
+          <GhostButton onClick={() => window.location.href = "/register"}>
             Daftar Baru
           </GhostButton>
         </div>
