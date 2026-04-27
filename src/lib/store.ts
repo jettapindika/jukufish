@@ -109,6 +109,7 @@ export const useFishStore = create<FishStore>()(
       setRole: (role) => set({ currentRole: role }),
       logout: () => set({ currentUser: null, currentRole: null }),
 
+      // Register user
       registerUser: (name, email, role, pin) => {
         const isFirstUser = get().users.length === 0;
         const user: UserProfile = {
@@ -121,10 +122,17 @@ export const useFishStore = create<FishStore>()(
           approved: role === "pemilik" || isFirstUser,
         };
         set((state) => ({ users: [...state.users, user] }));
+
+        // Sync to supabase
+        import("./auth-sync").then(({ syncRegisterUser }) => {
+          syncRegisterUser(user);
+        }).catch(() => {});
+        
         return user;
       },
 
       loginUser: (email, pin) => {
+        // Login to locally stored account
         const user = get().users.find(
           (u) => u.email.toLowerCase() === email.toLowerCase() && u.pin === pin
         );
@@ -135,20 +143,33 @@ export const useFishStore = create<FishStore>()(
 
       setCurrentUser: (user) => set({ currentUser: user, currentRole: user.role }),
 
+      // Approving user
       approveUser: (userId) => {
         set((state) => ({
           users: state.users.map((u) =>
             u.id === userId ? { ...u, approved: true } : u
           ),
         }));
+
+        // Sync to Supabase
+        import("./auth-sync").then(({ syncApproveUser }) => {
+          syncApproveUser(userId);
+        }).catch(() => {});
       },
 
+      // Rejecting user
       rejectUser: (userId) => {
         set((state) => ({
           users: state.users.filter((u) => u.id !== userId),
         }));
+
+        // Sync to Supabase
+        import("./auth-sync").then(({ syncRejectUser }) => {
+          syncRejectUser(userId);
+        }).catch(() => {});
       },
 
+      //Generate invite code
       generateInviteCode: (role) => {
         const code = Math.random().toString(36).substr(2, 8).toUpperCase();
         const inviteCode: InviteCode = {
@@ -159,9 +180,16 @@ export const useFishStore = create<FishStore>()(
           active: true,
         };
         set({ inviteCodes: [inviteCode] });
+
+        // Sync to Supabase
+        import("./auth-sync").then(({ syncSaveInviteCode }) => {
+          syncSaveInviteCode(code, get().currentUser?.id ?? "system");
+        }).catch(() => {});
+
         return code;
       },
 
+      // Reset invite code
       resetInviteCode: () => {
         const code = Math.random().toString(36).substr(2, 8).toUpperCase();
         const inviteCode: InviteCode = {
@@ -172,6 +200,12 @@ export const useFishStore = create<FishStore>()(
           active: true,
         };
         set({ inviteCodes: [inviteCode] });
+
+        // Sync to Supabase
+        import("./auth-sync").then(({ syncSaveInviteCode }) => {
+          syncSaveInviteCode(code, get().currentUser?.id ?? "system");
+        }).catch(() => {});
+
         return code;
       },
 
@@ -193,6 +227,19 @@ export const useFishStore = create<FishStore>()(
       },
 
       getPendingUsers: () => {
+        // Sync from Supabase in background
+        import("./auth-sync").then(({ syncGetPendingUsers }) => {
+          syncGetPendingUsers().then((remoteUsers) => {
+            if (remoteUsers.length > 0) {
+              const localUsers = get().users;
+              const remoteIds = new Set(remoteUsers.map((u) => u.id));
+              const localOnly = localUsers.filter((u) => !remoteIds.has(u.id));
+              useFishStore.setState({ users: [...localOnly, ...remoteUsers] });
+            }
+          });
+        }).catch(() => {});
+
+        // Return local pending users immediately
         return get().users.filter((u) => !u.approved);
       },
 
