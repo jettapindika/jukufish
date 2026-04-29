@@ -26,7 +26,7 @@ export default function KelolaIkanPage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-128px)]">
-      <div className="flex items-center gap-3 px-4 pt-4">
+      <div className="flex items-center gap-3 px-4 md:px-0 pt-4">
         <button
           onClick={() => router.push("/dashboard")}
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] active:scale-95 transition-transform"
@@ -36,14 +36,14 @@ export default function KelolaIkanPage() {
         <h1 className="text-lg font-extrabold text-[var(--color-foreground)]">Kelola</h1>
       </div>
 
-      <div className="flex gap-2 px-4 mt-4">
+      <div className="flex gap-2 px-4 md:px-0 mt-4 overflow-x-auto hide-scrollbar md:max-w-[600px]">
         {(["tim", "kategori", "ikan", "shelf", "export"] as const).map((tab) => {
           const labels = { tim: "Tim", kategori: "Kategori", ikan: "Ikan", shelf: "Shelf Life", export: "Export" };
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 h-12 rounded-xl text-xs font-bold transition-colors ${
+              className={`flex-1 shrink-0 h-12 rounded-xl text-xs font-bold transition-colors ${
                 activeTab === tab
                   ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]"
                   : "bg-[var(--color-surface)] text-[var(--color-muted)] border border-[var(--color-border)]"
@@ -55,7 +55,7 @@ export default function KelolaIkanPage() {
         })}
       </div>
 
-      <div className="flex-1 px-4 mt-4 pb-24">
+      <div className="flex-1 px-4 md:px-0 mt-4 pb-24">
         {activeTab === "tim" && <TimTab />}
         {activeTab === "kategori" && <KategoriTab />}
         {activeTab === "ikan" && <IkanTab />}
@@ -110,7 +110,7 @@ function TimTab() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 md:max-w-[600px]">
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Key className="h-4 w-4 text-[var(--color-primary)]" />
@@ -331,7 +331,7 @@ function KategoriTab() {
   const getLabel = (id: string) => allCategories[id] ?? id;
 
   return (
-    <div className="flex flex-col gap-3 relative">
+    <div className="flex flex-col gap-3 relative md:max-w-[600px]">
       {showAdd && (
         <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-primary)] p-4">
           <div className="flex flex-col gap-3">
@@ -467,7 +467,7 @@ function KategoriTab() {
       {!showAdd && (
         <button
           onClick={() => { setShowAdd(true); setEditingId(null); setDeletingId(null); }}
-          className="fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 active:scale-90 transition-transform"
+          className="fixed bottom-24 right-5 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 active:scale-90 transition-transform"
         >
           <Plus className="h-7 w-7" />
         </button>
@@ -572,7 +572,7 @@ function IkanTab() {
   const isDefaultFish = (id: string) => DEFAULT_FISH.some((f) => f.id === id) && !customFishIds.has(id);
 
   return (
-    <div className="flex flex-col gap-3 relative">
+    <div className="flex flex-col gap-3 relative md:max-w-[600px]">
       <Select value={filterCategory} onValueChange={setFilterCategory}>
         <SelectTrigger className="h-12 rounded-xl">
           <SelectValue placeholder="Semua Kategori" />
@@ -703,7 +703,7 @@ function IkanTab() {
       {!showAdd && !editingId && (
         <button
           onClick={() => { setShowAdd(true); setEditingId(null); setDeletingId(null); resetForm(); }}
-          className="fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 active:scale-90 transition-transform"
+          className="fixed bottom-24 right-5 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 active:scale-90 transition-transform"
         >
           <Plus className="h-7 w-7" />
         </button>
@@ -734,7 +734,7 @@ function ShelfLifeTab() {
   }, [allFish]);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 md:max-w-[600px]">
       <p className="text-xs text-[var(--color-muted)]">
         Atur berapa jam ikan bisa disimpan di cold storage sebelum dianggap kritis.
       </p>
@@ -865,7 +865,7 @@ function ExportTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
       <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
         <div className="flex items-center gap-3 mb-3">
           <FileSpreadsheet className="h-6 w-6 text-[var(--color-primary)]" />
@@ -900,7 +900,7 @@ function ExportTab() {
         </button>
       </div>
 
-      <div className="rounded-xl border border-[#BA1A1A]/30 bg-[#BA1A1A]/5 p-5">
+      <div className="rounded-xl border border-[#BA1A1A]/30 bg-[#BA1A1A]/5 p-5 md:col-span-2">
         <div className="flex items-center gap-3 mb-3">
           <AlertTriangle className="h-6 w-6 text-[#BA1A1A]" />
           <div>

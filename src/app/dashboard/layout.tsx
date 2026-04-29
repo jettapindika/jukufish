@@ -69,7 +69,7 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--color-background)]">
       <header
-        className="fixed top-0 left-0 right-0 z-40 flex h-[64px] w-full items-center justify-between bg-[var(--color-surface)] px-4"
+        className="fixed top-0 left-0 right-0 z-40 flex h-[64px] w-full items-center justify-between bg-[var(--color-surface)] px-4 md:px-8 lg:px-12"
         style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05), 0px 4px 8px rgba(0,0,0,0.05), 0px 10px 20px rgba(0,0,0,0.03)" }}
       >
         <div className="flex items-center">
@@ -80,7 +80,7 @@ export default function DashboardLayout({
             JUKU
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:gap-3">
           <OnlineBadge />
           <button
             onClick={() => setShowLogoutConfirm(true)}
@@ -93,13 +93,13 @@ export default function DashboardLayout({
       </header>
 
       <SyncProvider>
-        <main className="mx-auto flex-1 w-full max-w-[430px] pt-[64px] pb-[100px]">
+        <main className="mx-auto flex-1 w-full max-w-[430px] md:max-w-none pt-[64px] pb-[100px] md:pb-[116px] md:px-8 lg:px-12">
           {children}
         </main>
       </SyncProvider>
 
       {isToastVisible && syncToast && (
-        <div className="fixed bottom-24 left-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-[#10B981] p-3 shadow-lg">
+        <div className="fixed bottom-24 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-md md:w-[calc(100%-2rem)] z-50 flex items-center gap-2 rounded-xl bg-[#10B981] p-3 shadow-lg">
           <Check size={16} className="shrink-0 text-white" />
           <span className="text-sm font-semibold text-white">{syncToast.message}</span>
         </div>

@@ -97,7 +97,7 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats
   }, [activeEntries]);
 
   return (
-    <div className="flex flex-col px-4 pt-[23px] pb-4 gap-6">
+    <div className="flex flex-col px-4 pt-[23px] pb-4 gap-6 md:px-0">
       <div>
         <h2 className="text-2xl font-bold text-[#1C1B1B]">
           {getTimeGreeting()}, {userName}!
@@ -133,7 +133,7 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats
         Catat Ikan Masuk
       </Link>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 md:gap-3">
         <BentoCard label="TOTAL STOK" value={(stats.totalKg / 1000).toFixed(1)} unit="Ton" />
         <BentoCard label="MASUK HARI INI" value={String(stats.todayKg)} unit="Kg" />
       </div>
@@ -163,19 +163,21 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats
         {recentEntries.length === 0 ? (
           <p className="py-4 text-center text-sm text-[#444748]">Belum ada aktivitas</p>
         ) : (
-          recentEntries.map((entry) => {
-            const fish = getFishById(entry.fishId);
-            const isIncoming = entry.type === 'entry';
-            return (
-              <ActivityItem
-                key={entry.id}
-                name={fish?.localName ?? entry.fishId}
-                detail={`Batch #${entry.qrCode?.slice(-3) ?? "000"} • ${isIncoming ? "Masuk" : "Keluar"}`}
-                weight={`${isIncoming ? "+" : "-"}${entry.weightKg} Kg`}
-                iconType={isIncoming ? "masuk" : "keluar"}
-              />
-            );
-          })
+          <div className="flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-3">
+            {recentEntries.map((entry) => {
+              const fish = getFishById(entry.fishId);
+              const isIncoming = true;
+              return (
+                <ActivityItem
+                  key={entry.id}
+                  name={fish?.localName ?? entry.fishId}
+                  detail={`Batch #${entry.qrCode?.slice(-3) ?? "000"} • ${isIncoming ? "Masuk" : "Keluar"}`}
+                  weight={`${isIncoming ? "+" : "-"}${entry.weightKg} Kg`}
+                  iconType={isIncoming ? "masuk" : "keluar"}
+                />
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
@@ -233,8 +235,8 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
   }, [activeEntries, activeFilter]);
 
   return (
-    <div className="p-4 min-h-full">
-      <div className="space-y-4">
+    <div className="p-4 md:px-0 min-h-full">
+      <div className="space-y-4 md:space-y-6">
         {stats.critical > 0 && <AlertCard />}
         <StatGrid stats={stats} />
         <FilterChips activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
@@ -243,7 +245,7 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
           <h2 className="text-xl font-bold text-[#1C1B1B] mt-2 mb-3">
             Ringkasan Stok
           </h2>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-3">
             {filteredEntries.length > 0 ? (
               filteredEntries.map((entry) => {
                 const fish = getFishById(entry.fishId);
@@ -281,7 +283,7 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
 }
 
 const StatGrid = ({ stats }: { stats: Stats }) => (
-  <div className="grid grid-cols-2 gap-2 w-full">
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full">
     <StatCard label="Total Stok" value={String(stats.total)} borderColor="#242424" labelColor="#444748" valueColor="#1C1B1B" />
     <StatCard label="Segar" value={String(stats.fresh)} borderColor="#10B981" labelColor="#10B981" valueColor="#10B981" />
     <StatCard label="Perhatian" value={String(stats.warning)} borderColor="#F59E0B" labelColor="#F59E0B" valueColor="#F59E0B" />

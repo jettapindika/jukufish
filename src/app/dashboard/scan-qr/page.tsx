@@ -117,7 +117,7 @@ export default function ScanQrPage() {
 
   if (scanLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-7.5rem)]">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-7.5rem)] md:max-w-2xl md:mx-auto md:w-full">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
         <p className="mt-3 text-sm text-[var(--color-muted)]">Mencari data stok...</p>
       </div>
@@ -126,7 +126,7 @@ export default function ScanQrPage() {
 
   if (scanning) {
     return (
-      <div className="flex flex-col h-[calc(100vh-7.5rem)] px-4 pt-2 pb-0 overflow-hidden">
+      <div className="flex flex-col h-[calc(100vh-7.5rem)] px-4 md:px-0 pt-2 pb-0 overflow-hidden md:max-w-2xl md:mx-auto md:w-full">
         <div className="text-center mb-2">
           <h1 className="text-lg font-bold text-[var(--color-foreground)]">
             Scan QR Stok
@@ -185,7 +185,7 @@ export default function ScanQrPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] px-4 pt-4 pb-20">
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] px-4 md:px-0 pt-4 pb-20 md:max-w-2xl md:mx-auto md:w-full">
       <div className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-sm border border-[var(--color-border)]">
         <h2 className="text-2xl font-bold text-[var(--color-foreground)]">
           {fish?.localName ?? scannedEntry.fishId}

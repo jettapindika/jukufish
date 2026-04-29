@@ -16,7 +16,7 @@ export default function PengaturanPage() {
   const categories = Object.entries(FISH_CATEGORIES) as [FishCategory, string][];
 
   return (
-    <div className="flex flex-col px-4 pt-4 pb-8">
+    <div className="flex flex-col px-4 md:px-0 pt-4 pb-8 md:max-w-[700px]">
       <div className="mb-4 flex items-center gap-3">
         <button
           onClick={() => router.push("/dashboard")}

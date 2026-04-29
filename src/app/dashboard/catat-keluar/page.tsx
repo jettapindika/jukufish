@@ -61,7 +61,7 @@ export default function CatatKeluarPage() {
 
   if (activeEntries.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-20">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-20 md:max-w-md md:mx-auto">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-border)]">
           <Package className="h-10 w-10 text-[var(--color-muted)]" />
         </div>
@@ -90,7 +90,7 @@ function MarkedBadge({ entryId }: { entryId: string }) {
 }
 
   return (
-    <div className="flex flex-col gap-3 px-4 pb-28 pt-4">
+    <div className="flex flex-col gap-3 px-4 md:px-0 pb-28 pt-4">
       <div className="flex items-center gap-2 px-1 pb-2">
         <ArrowDown className="h-5 w-5 text-[var(--color-primary)]" />
         <h1 className="text-xl font-bold text-[var(--color-foreground)]">Catat Keluar</h1>

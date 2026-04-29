@@ -76,7 +76,7 @@ export function BottomNav({ role }: BottomNavProps) {
       className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-surface)] pb-[env(safe-area-inset-bottom)]"
       style={{ boxShadow: "0px -2px 10px rgba(0,0,0,0.05)" }}
     >
-      <div className="mx-auto grid h-[80px] w-full max-w-[430px] grid-cols-5">
+      <div className="mx-auto grid h-[80px] md:h-[88px] w-full max-w-[430px] md:max-w-[600px] grid-cols-5">
         {items.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -90,13 +90,13 @@ export function BottomNav({ role }: BottomNavProps) {
               className="flex items-center justify-center"
             >
               <div
-                className={`flex h-[53px] w-[64px] flex-col items-center justify-center rounded-[10px] transition-all duration-200 ${
+                className={`flex h-[53px] w-[64px] md:h-[58px] md:w-[80px] lg:w-[100px] flex-col items-center justify-center rounded-[10px] transition-all duration-200 ${
                   isActive ? "bg-[#242424]" : ""
                 }`}
               >
                 <Icon color={isActive ? activeColor : inactiveColor} />
                 <span
-                  className="mt-[3px] whitespace-nowrap text-[9px] font-bold tracking-[0.08em] leading-none"
+                  className="mt-[3px] whitespace-nowrap text-[9px] md:text-[10px] lg:text-xs font-bold tracking-[0.08em] leading-none"
                   style={{ color: isActive ? activeColor : inactiveColor }}
                 >
                   {item.label}

@@ -108,7 +108,7 @@ export default function CatatMasukPage() {
     const enteredDate = new Date(savedEntry.enteredAt);
 
     return (
-      <div className="flex flex-col min-h-[calc(100vh-128px)] px-4 py-6">
+      <div className="flex flex-col min-h-[calc(100vh-128px)] px-4 md:px-0 py-6 md:max-w-2xl md:mx-auto md:w-full">
         <div className="flex flex-col items-center mb-6">
           <div className="w-16 h-16 rounded-full bg-[var(--color-fresh)] flex items-center justify-center mb-3">
             <Check className="w-8 h-8 text-white" />
@@ -206,8 +206,8 @@ export default function CatatMasukPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-128px)]">
-      <div className="flex items-center gap-3 px-4 py-3">
+    <div className="flex flex-col min-h-[calc(100vh-128px)] md:max-w-2xl md:mx-auto md:w-full">
+      <div className="flex items-center gap-3 px-4 md:px-0 py-3">
         <button
           onClick={handleBack}
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-95 transition-all"
@@ -220,7 +220,7 @@ export default function CatatMasukPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 px-4 mb-4">
+      <div className="flex gap-1 px-4 md:px-0 mb-4">
         {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
           <div
             key={s}
@@ -232,7 +232,7 @@ export default function CatatMasukPage() {
         ))}
       </div>
 
-      <div className="flex-1 px-4 pb-4">
+      <div className="flex-1 px-4 md:px-0 pb-4">
         {step === 1 && (
           <div className="space-y-4">
             <div>
@@ -264,7 +264,7 @@ export default function CatatMasukPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Pilih Jenis — {FISH_CATEGORIES[selectedCategory]}
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {filteredFish.map((fish) => (
                     <button
                       key={fish.id}

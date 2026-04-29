@@ -75,7 +75,7 @@ export default function StokPage() {
   }
 
   return (
-    <div className="flex flex-col px-4 pt-4 pb-24 gap-4">
+    <div className="flex flex-col px-4 md:px-0 pt-4 pb-24 gap-4">
       <div className="flex items-center gap-2">
         <Package className="h-5 w-5 text-[var(--color-primary)]" />
         <h1 className="text-xl font-bold text-[var(--color-foreground)]">Stok Cold Storage</h1>
@@ -84,7 +84,7 @@ export default function StokPage() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {byFish.slice(0, 6).map(({ fishId, fish, count, kg }) => (
           <div
             key={fishId}
@@ -124,7 +124,7 @@ export default function StokPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((entry) => (
           <StockCard key={entry.id} entry={entry} getFishById={getFishById} categories={categories} />
         ))}

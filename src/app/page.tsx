@@ -428,7 +428,7 @@ export default function LoginPage() {
       return (
         <div className="flex min-h-dvh flex-col bg-[var(--color-background)]">
           <div className="flex flex-1 flex-col items-center justify-center px-6">
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-sm md:max-w-md">
               <div className="mb-8 flex flex-col items-center gap-2">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-primary)]">
                   <Check className="h-9 w-9 text-[var(--color-on-primary)]" />
@@ -467,12 +467,12 @@ export default function LoginPage() {
     }
 
     return (
-      <div className="flex min-h-dvh flex-col bg-[var(--color-background)]">
-        <div className="flex flex-1 flex-col px-6 pt-8 pb-12">
+      <div className="flex min-h-dvh flex-col bg-[var(--color-background)] md:items-center md:justify-center">
+        <div className="flex flex-1 flex-col px-6 pt-8 pb-12 md:flex-initial md:w-full md:max-w-md">
           <div className="mb-8 flex flex-col items-center gap-2">
             <Logo />
           </div>
-          <div className="mx-auto w-full max-w-sm">
+          <div className="mx-auto w-full max-w-sm md:max-w-full">
             <div className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4" style={{ boxShadow: "var(--shadow-card)" }}>
               <CalHeading className="mb-1 text-lg font-semibold text-[var(--color-foreground)]">
                 Setup Awal
@@ -526,17 +526,17 @@ export default function LoginPage() {
 
   if (screen === "welcome") {
     return (
-      <div className="flex min-h-dvh flex-col justify-between bg-white" style={{ padding: "52px 16px" }}>
-        <div className="flex flex-col items-center" style={{ marginBottom: 32 }}>
+      <div className="flex min-h-dvh flex-col justify-between bg-white px-4 py-[52px] md:justify-center md:items-center md:gap-12">
+        <div className="flex flex-col items-center mb-8 md:mb-0">
           <Logo />
         </div>
-        <div className="flex w-full flex-col items-center" style={{ gap: 8 }}>
-          <div className="w-full" style={{ maxWidth: 358 }}>
+        <div className="flex w-full flex-col items-center gap-2 md:max-w-md">
+          <div className="w-full max-w-[358px] md:max-w-full">
             <PrimaryButton onClick={() => setScreen("login")}>
               Masuk
             </PrimaryButton>
           </div>
-          <div className="w-full" style={{ maxWidth: 358 }}>
+          <div className="w-full max-w-[358px] md:max-w-full">
             <GhostButton onClick={() => setScreen("register")}>
               Daftar Baru
             </GhostButton>
@@ -548,12 +548,12 @@ export default function LoginPage() {
 
   if (screen === "login") {
     return (
-      <div className="flex min-h-dvh flex-col bg-[#FDF8F8]">
-        <div className="px-3 pt-3">
+      <div className="flex min-h-dvh flex-col bg-[#FDF8F8] md:items-center md:justify-center">
+        <div className="px-3 pt-3 md:w-full md:max-w-md">
           <BackButton onClick={() => { setScreen("welcome"); setLoginError(""); setLoginEmail(""); setLoginPin(""); }} />
         </div>
-        <div className="flex flex-1 flex-col px-6 pt-4 pb-12">
-          <div className="mx-auto w-full max-w-sm">
+        <div className="flex flex-1 flex-col px-6 pt-4 pb-12 md:flex-initial md:w-full md:max-w-md">
+          <div className="mx-auto w-full max-w-sm md:max-w-full">
             <h1
               className="mb-1"
               style={{
@@ -614,7 +614,7 @@ export default function LoginPage() {
   if (screen === "register" && regSuccess) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center bg-[var(--color-background)] px-6">
-        <div className="mx-auto w-full max-w-sm text-center">
+        <div className="mx-auto w-full max-w-sm md:max-w-md text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-warning)]/10">
             <Clock className="h-8 w-8 text-[var(--color-warning)]" />
           </div>
@@ -638,12 +638,12 @@ export default function LoginPage() {
 
   if (screen === "register") {
     return (
-      <div className="flex min-h-dvh flex-col bg-[#FDF8F8]">
-        <div className="px-3 pt-3">
+      <div className="flex min-h-dvh flex-col bg-[#FDF8F8] md:items-center">
+        <div className="px-3 pt-3 md:w-full md:max-w-md">
           <BackButton onClick={() => { setScreen("welcome"); setRegErrors({}); }} />
         </div>
-        <div className="flex flex-1 flex-col px-6 pt-4 pb-12 overflow-y-auto">
-          <div className="mx-auto w-full max-w-sm">
+        <div className="flex flex-1 flex-col px-6 pt-4 pb-12 overflow-y-auto md:flex-initial md:w-full md:max-w-md">
+          <div className="mx-auto w-full max-w-sm md:max-w-full">
             <h1
               className="mb-1"
               style={{

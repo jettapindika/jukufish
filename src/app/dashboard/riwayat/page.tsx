@@ -136,7 +136,7 @@ export default function RiwayatPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 px-4 pb-28 pt-4">
+    <div className="flex flex-col gap-5 px-4 md:px-0 pb-28 pt-4">
       <div className="flex items-center justify-between px-1 pb-1">
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-[var(--color-primary)]" />
@@ -190,7 +190,7 @@ export default function RiwayatPage() {
             </span>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-3">
             {group.items.map((item) => {
               const isMasuk = item.type === "masuk";
               const entry = isMasuk ? item.entry : item.entry;

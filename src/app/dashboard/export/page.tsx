@@ -78,7 +78,7 @@ export default function ExportPage() {
   };
 
   return (
-    <div className="flex flex-col px-4 pt-4 pb-8">
+    <div className="flex flex-col px-4 md:px-0 pt-4 pb-8">
       <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => router.push("/dashboard")}
@@ -91,7 +91,7 @@ export default function ExportPage() {
         </h1>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
         <div className="rounded-[var(--radius)] bg-[var(--color-surface)] p-5 shadow-sm">
           <div className="mb-3 flex items-center gap-3">
             <FileSpreadsheet className="h-6 w-6 text-[var(--color-primary)]" />
