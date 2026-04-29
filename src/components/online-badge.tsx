@@ -2,7 +2,7 @@
 
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useFishStore } from "@/lib/store";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Wifi } from "lucide-react";
 
 export function OnlineBadge() {
   const isOnline = useOnlineStatus();
@@ -11,10 +11,10 @@ export function OnlineBadge() {
 
   if (!isOnline) {
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-gray-400" />
-        <span className="text-xs font-medium text-gray-500">
-          Offline{pendingCount > 0 ? ` · ${pendingCount} tertunda` : ""}
+        <span className="text-sm font-normal text-gray-500">
+          Offline{pendingCount > 0 ? ` · ${pendingCount}` : ""}
         </span>
       </div>
     );
@@ -22,29 +22,29 @@ export function OnlineBadge() {
 
   if (syncState === "syncing") {
     return (
-      <div className="flex items-center gap-1.5">
-        <RefreshCw className="w-3 h-3 text-[var(--color-primary)] animate-spin" />
-        <span className="text-xs font-medium text-[var(--color-primary)]">Menyinkronkan...</span>
+      <div className="flex items-center gap-1">
+        <RefreshCw className="w-4 h-4 text-[#10B981] animate-spin" />
+        <span className="text-base font-normal text-[#10B981]">Syncing...</span>
       </div>
     );
   }
 
   if (syncState === "error") {
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-[var(--color-warning)]" />
-        <span className="text-xs font-medium text-[var(--color-warning)]">
-          Gagal sync{pendingCount > 0 ? ` · ${pendingCount} tertunda` : ""}
+        <span className="text-sm font-normal text-[var(--color-warning)]">
+          Error{pendingCount > 0 ? ` · ${pendingCount}` : ""}
         </span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="w-2 h-2 rounded-full bg-[var(--color-fresh)]" />
-      <span className="text-xs font-medium text-gray-500">
-        {pendingCount > 0 ? `${pendingCount} tertunda` : "Tersinkronisasi"}
+    <div className="flex items-center gap-1">
+      <Wifi className="w-4 h-4 text-[#10B981]" />
+      <span className="text-base font-normal text-[#10B981]">
+        Online
       </span>
     </div>
   );

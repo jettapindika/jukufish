@@ -50,6 +50,7 @@ interface FishStore {
   getMarkedEntries: () => StockEntry[];
   getPendingCount: () => number;
   clearHistory: () => Promise<void>;
+  resetAllData: () => Promise<void>;
 
   setSyncState: (state: SyncState) => void;
   setSyncToast: (toast: SyncToast | null) => void;
@@ -308,10 +309,54 @@ export const useFishStore = create<FishStore>()(
 
         try {
           const { supabase } = await import("./supabase");
-          await supabase.from("stock_exits").delete().neq("id", "");
-          await supabase.from("stock_entries").delete().neq("id", "");
+          const { data: exits } = await supabase.from("stock_exits").select("id");
+          for (const r of (exits ?? [])) await supabase.from("stock_exits").delete().eq("id", r.id);
+          const { data: entries } = await supabase.from("stock_entries").select("id");
+          for (const r of (entries ?? [])) await supabase.from("stock_entries").delete().eq("id", r.id);
         } catch {
           // offline — remote delete will be skipped, lastClearedAt prevents re-pull
+        }
+      },
+
+      resetAllData: async () => {
+        const now = new Date().toISOString();
+
+        set({
+          currentUser: null,
+          currentRole: null,
+          users: [],
+          inviteCodes: [],
+          entries: [],
+          exits: [],
+          syncQueue: [],
+          syncState: "idle",
+          lastSyncAt: null,
+          lastClearedAt: now,
+          syncToast: null,
+          shelfLifeOverrides: [],
+          customCategories: [],
+          customFish: [],
+        });
+
+        try {
+          const { supabase } = await import("./supabase");
+          const { data: exits } = await supabase.from("stock_exits").select("id");
+          for (const r of (exits ?? [])) await supabase.from("stock_exits").delete().eq("id", r.id);
+          const { data: entries } = await supabase.from("stock_entries").select("id");
+          for (const r of (entries ?? [])) await supabase.from("stock_entries").delete().eq("id", r.id);
+          const { data: invites } = await supabase.from("invite_codes").select("code");
+          for (const r of (invites ?? [])) await supabase.from("invite_codes").delete().eq("code", r.code);
+          const { data: users } = await supabase.from("users").select("id");
+          for (const r of (users ?? [])) await supabase.from("users").delete().eq("id", r.id);
+        } catch {
+          // offline
+        }
+
+        try {
+          const localforage = (await import("localforage")).default;
+          await localforage.removeItem("juku-fish-storage");
+        } catch {
+          // fallback
         }
       },
 
