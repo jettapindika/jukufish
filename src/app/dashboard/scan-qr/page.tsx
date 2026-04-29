@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ScanLine, Fish, ArrowLeft, RefreshCw, Package, LogOut, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, RefreshCw, LogOut, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { QrScanner } from "@/components/qr-scanner";
 import { useFishStore } from "@/lib/store";
@@ -126,22 +126,13 @@ export default function ScanQrPage() {
 
   if (scanning) {
     return (
-      <div className="flex flex-col h-[calc(100vh-7.5rem)] px-4 md:px-0 pt-2 pb-0 overflow-hidden md:max-w-2xl md:mx-auto md:w-full">
-        <div className="text-center mb-2">
-          <h1 className="text-lg font-bold text-[var(--color-foreground)]">
-            Scan QR Stok
-          </h1>
-          <p className="text-xs text-[var(--color-muted)]">
-            Arahkan kamera ke QR code pada boks ikan
-          </p>
-        </div>
+      <div className="fixed inset-0 top-[64px] bottom-[80px] md:bottom-[88px] z-30 overflow-hidden">
+        <QrScanner onScan={handleScan} scanning={scanning && !scanLoading} />
 
-        <div className="flex-1 flex flex-col items-center min-h-0">
-          <QrScanner onScan={handleScan} scanning={scanning && !scanLoading} />
-
-          {error && (
-            <div className="mt-6 w-full max-w-sm">
-              <div className="bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/20 rounded-[var(--radius)] p-4 text-center">
+        {error && (
+          <div className="absolute bottom-6 left-4 right-4 flex flex-col items-center z-40">
+            <div className="w-full max-w-sm">
+              <div className="bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/20 rounded-[var(--radius)] p-4 text-center backdrop-blur-sm">
                 <p className="text-[var(--color-critical)] font-semibold text-sm">
                   {error}
                 </p>
@@ -154,8 +145,8 @@ export default function ScanQrPage() {
                 Scan Ulang
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }

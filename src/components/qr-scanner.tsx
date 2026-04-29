@@ -218,30 +218,36 @@ export function QrScanner({
   }
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full flex-1 min-h-0">
-      <div className="relative w-full flex-1 overflow-hidden rounded-2xl bg-black">
-        <div id={READER_ID} className="w-full h-full" />
+    <div className="relative w-full h-full bg-[#1A1A1A]">
+      <div id={READER_ID} className="absolute inset-0 w-full h-full" />
 
-        {(isStarting || scanning) && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="relative" style={{ width: "70%", maxWidth: 280, aspectRatio: "1" }}>
-              <div className="absolute left-0 top-0 h-10 w-10 border-l-4 border-t-4 border-white/80 rounded-tl-lg" />
-              <div className="absolute right-0 top-0 h-10 w-10 border-r-4 border-t-4 border-white/80 rounded-tr-lg" />
-              <div className="absolute bottom-0 left-0 h-10 w-10 border-b-4 border-l-4 border-white/80 rounded-bl-lg" />
-              <div className="absolute bottom-0 right-0 h-10 w-10 border-b-4 border-r-4 border-white/80 rounded-br-lg" />
+      {(isStarting || scanning) && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="relative" style={{ width: 256, height: 256 }}>
+            <div className="absolute left-0 top-0 h-10 w-10 border-l-[3px] border-t-[3px] border-white rounded-tl-[4px]" />
+            <div className="absolute right-0 top-0 h-10 w-10 border-r-[3px] border-t-[3px] border-white rounded-tr-[4px]" />
+            <div className="absolute bottom-0 left-0 h-10 w-10 border-b-[3px] border-l-[3px] border-white rounded-bl-[4px]" />
+            <div className="absolute bottom-0 right-0 h-10 w-10 border-b-[3px] border-r-[3px] border-white rounded-br-[4px]" />
 
-              <div
-                className="absolute left-2 right-2 h-0.5 bg-[var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]"
-                style={{ animation: "scanline 2s ease-in-out infinite" }}
-              />
+            <div
+              className="absolute left-0 right-0 h-[2px]"
+              style={{
+                background: "linear-gradient(90deg, transparent 0%, #00B4FF 20%, #00D4FF 50%, #00B4FF 80%, transparent 100%)",
+                boxShadow: "0 0 12px 2px rgba(0, 180, 255, 0.5)",
+                animation: "scanline 2s ease-in-out infinite",
+              }}
+            />
+
+            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: "calc(100% + 26px)" }}>
+              <div className="rounded-full bg-black/60 backdrop-blur-sm px-4 py-1.5">
+                <span className="text-white/90 text-xs font-medium whitespace-nowrap">
+                  Arahkan kamera ke QR Code
+                </span>
+              </div>
             </div>
           </div>
-        )}
-      </div>
-
-      <p className="text-sm text-gray-500">
-        Arahkan kamera ke QR Code
-      </p>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scanline {
