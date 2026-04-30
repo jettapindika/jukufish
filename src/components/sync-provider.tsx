@@ -5,6 +5,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useFishStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { fullSync, FullSyncResult } from "@/lib/sync";
+import { pullAllSettings } from "@/lib/settings-sync";
 
 const SYNC_INTERVAL_MS = 60_000;
 const DEBOUNCE_MS = 500;
@@ -72,6 +73,21 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         }));
       }
 
+      try {
+        const settings = await pullAllSettings();
+        if (settings) {
+          const currentStore = useFishStore.getState();
+          const catChanged = JSON.stringify(currentStore.customCategories) !== JSON.stringify(settings.customCategories);
+          const fishChanged = JSON.stringify(currentStore.customFish) !== JSON.stringify(settings.customFish);
+          if (catChanged || fishChanged) {
+            useFishStore.setState({
+              ...(catChanged ? { customCategories: settings.customCategories } : {}),
+              ...(fishChanged ? { customFish: settings.customFish } : {}),
+            });
+          }
+        }
+      } catch {}
+
       freshStore.setLastSyncAt(new Date().toISOString());
       freshStore.setSyncState(result.failed > 0 ? "error" : "synced");
 
@@ -133,6 +149,13 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "stock_exits" },
+        () => {
+          debouncedRealtimeSync();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "app_settings" },
         () => {
           debouncedRealtimeSync();
         }

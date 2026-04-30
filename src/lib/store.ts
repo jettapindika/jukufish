@@ -430,6 +430,9 @@ export const useFishStore = create<FishStore>()(
         set((state) => ({
           customCategories: [...state.customCategories, { id, label }],
         }));
+        import("./settings-sync").then(({ pushCustomCategories }) => {
+          pushCustomCategories(get().customCategories);
+        }).catch(() => {});
       },
 
       editCategory: (id, label) => {
@@ -438,6 +441,9 @@ export const useFishStore = create<FishStore>()(
             c.id === id ? { ...c, label } : c
           ),
         }));
+        import("./settings-sync").then(({ pushCustomCategories }) => {
+          pushCustomCategories(get().customCategories);
+        }).catch(() => {});
       },
 
       deleteCategory: (id) => {
@@ -445,12 +451,20 @@ export const useFishStore = create<FishStore>()(
           customCategories: state.customCategories.filter((c) => c.id !== id),
           customFish: state.customFish.filter((f) => f.category !== id),
         }));
+        import("./settings-sync").then(({ pushCustomCategories, pushCustomFish }) => {
+          const state = get();
+          pushCustomCategories(state.customCategories);
+          pushCustomFish(state.customFish);
+        }).catch(() => {});
       },
 
       addFish: (fish) => {
         set((state) => ({
           customFish: [...state.customFish, { ...fish, isCustom: true }],
         }));
+        import("./settings-sync").then(({ pushCustomFish }) => {
+          pushCustomFish(get().customFish);
+        }).catch(() => {});
       },
 
       editFish: (id, updates) => {
@@ -459,12 +473,18 @@ export const useFishStore = create<FishStore>()(
             f.id === id ? { ...f, ...updates } : f
           ),
         }));
+        import("./settings-sync").then(({ pushCustomFish }) => {
+          pushCustomFish(get().customFish);
+        }).catch(() => {});
       },
 
       deleteFish: (id) => {
         set((state) => ({
           customFish: state.customFish.filter((f) => f.id !== id),
         }));
+        import("./settings-sync").then(({ pushCustomFish }) => {
+          pushCustomFish(get().customFish);
+        }).catch(() => {});
       },
     }),
     {
