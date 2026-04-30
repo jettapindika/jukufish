@@ -89,6 +89,15 @@ const storage = {
   },
 };
 
+function syncSettings(key: string, value: unknown) {
+  import("./supabase").then(async ({ supabase }) => {
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ key, value, updated_at: new Date().toISOString() });
+    if (error) console.error("[syncSettings]", key, error.message);
+  }).catch(() => {});
+}
+
 export const useFishStore = create<FishStore>()(
   persist(
     (set, get) => ({
@@ -430,9 +439,7 @@ export const useFishStore = create<FishStore>()(
         set((state) => ({
           customCategories: [...state.customCategories, { id, label }],
         }));
-        import("./settings-sync").then(({ pushCustomCategories }) => {
-          pushCustomCategories(get().customCategories);
-        }).catch(() => {});
+        syncSettings("custom_categories", get().customCategories);
       },
 
       editCategory: (id, label) => {
@@ -441,9 +448,7 @@ export const useFishStore = create<FishStore>()(
             c.id === id ? { ...c, label } : c
           ),
         }));
-        import("./settings-sync").then(({ pushCustomCategories }) => {
-          pushCustomCategories(get().customCategories);
-        }).catch(() => {});
+        syncSettings("custom_categories", get().customCategories);
       },
 
       deleteCategory: (id) => {
@@ -451,20 +456,16 @@ export const useFishStore = create<FishStore>()(
           customCategories: state.customCategories.filter((c) => c.id !== id),
           customFish: state.customFish.filter((f) => f.category !== id),
         }));
-        import("./settings-sync").then(({ pushCustomCategories, pushCustomFish }) => {
-          const state = get();
-          pushCustomCategories(state.customCategories);
-          pushCustomFish(state.customFish);
-        }).catch(() => {});
+        const s = get();
+        syncSettings("custom_categories", s.customCategories);
+        syncSettings("custom_fish", s.customFish);
       },
 
       addFish: (fish) => {
         set((state) => ({
           customFish: [...state.customFish, { ...fish, isCustom: true }],
         }));
-        import("./settings-sync").then(({ pushCustomFish }) => {
-          pushCustomFish(get().customFish);
-        }).catch(() => {});
+        syncSettings("custom_fish", get().customFish);
       },
 
       editFish: (id, updates) => {
@@ -473,18 +474,14 @@ export const useFishStore = create<FishStore>()(
             f.id === id ? { ...f, ...updates } : f
           ),
         }));
-        import("./settings-sync").then(({ pushCustomFish }) => {
-          pushCustomFish(get().customFish);
-        }).catch(() => {});
+        syncSettings("custom_fish", get().customFish);
       },
 
       deleteFish: (id) => {
         set((state) => ({
           customFish: state.customFish.filter((f) => f.id !== id),
         }));
-        import("./settings-sync").then(({ pushCustomFish }) => {
-          pushCustomFish(get().customFish);
-        }).catch(() => {});
+        syncSettings("custom_fish", get().customFish);
       },
     }),
     {
