@@ -65,7 +65,7 @@ export async function pullRemoteEntries(
   afterDate?: string | null
 ): Promise<StockEntry[]> {
   let query = supabase.from("stock_entries").select("*").order("entered_at", { ascending: true });
-  if (afterDate) query = query.gt("created_at", afterDate);
+  if (afterDate) query = query.gt("synced_at", afterDate);
   const { data, error } = await query;
   if (error || !data) return [];
 
@@ -78,7 +78,7 @@ export async function pullRemoteExits(
   afterDate?: string | null
 ): Promise<StockExit[]> {
   let query = supabase.from("stock_exits").select("*").order("exited_at", { ascending: true });
-  if (afterDate) query = query.gt("created_at", afterDate);
+  if (afterDate) query = query.gt("synced_at", afterDate);
   const { data, error } = await query;
   if (error || !data) return [];
 
@@ -97,32 +97,22 @@ export async function fullSync(
   let failed = 0;
   let deleted = 0;
 
-  const recentlyClearedMs = lastClearedAt ? Date.now() - new Date(lastClearedAt).getTime() : Infinity;
-  if (recentlyClearedMs < 5_000) {
-    return { pushed: 0, pulled: 0, failed: 0, deleted: 0, ...emptySyncDetails() };
-  }
-
-  // Offline clear recovery: delete remote data that predates the clear timestamp
+  // Offline clear recovery: wipe all remote data when local is empty after a clear
   if (lastClearedAt && entries.length === 0 && exits.length === 0 && queue.length === 0) {
-    const { data: staleEntries } = await supabase
-      .from("stock_entries")
-      .select("id")
-      .lte("created_at", lastClearedAt);
-    const { data: staleExits } = await supabase
-      .from("stock_exits")
-      .select("id")
-      .lte("created_at", lastClearedAt);
-
-    for (const r of (staleExits ?? [])) {
-      await supabase.from("stock_exits").delete().eq("id", r.id);
-    }
-    for (const r of (staleEntries ?? [])) {
-      await supabase.from("stock_entries").delete().eq("id", r.id);
-    }
+    await supabase.from("stock_exits").delete().neq("id", "");
+    await supabase.from("stock_entries").delete().neq("id", "");
   }
 
-  const { data: remoteEntries } = await supabase.from("stock_entries").select("*");
-  const { data: remoteExits } = await supabase.from("stock_exits").select("*");
+  let entryQuery = supabase.from("stock_entries").select("*");
+  let exitQuery = supabase.from("stock_exits").select("*");
+
+  if (lastClearedAt) {
+    entryQuery = entryQuery.gt("synced_at", lastClearedAt);
+    exitQuery = exitQuery.gt("synced_at", lastClearedAt);
+  }
+
+  const { data: remoteEntries } = await entryQuery;
+  const { data: remoteExits } = await exitQuery;
 
   const remoteEntryIds = new Set((remoteEntries ?? []).map((r) => r.id as string));
   const remoteExitIds = new Set((remoteExits ?? []).map((r) => r.id as string));

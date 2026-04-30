@@ -19,9 +19,11 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
   const runSync = useCallback(async () => {
     if (syncingRef.current) return;
-    syncingRef.current = true;
 
     const store = useFishStore.getState();
+    if (store.clearInProgress) return;
+
+    syncingRef.current = true;
     store.setSyncState("syncing");
 
     try {
