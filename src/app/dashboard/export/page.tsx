@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Download, FileSpreadsheet } from "lucide-react";
 import { useFishStore } from "@/lib/store";
-import { getFishById } from "@/lib/fish-data";
+import { useFishData } from "@/hooks/use-fish-data";
 
 function downloadCsv(filename: string, csvContent: string) {
   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
@@ -20,6 +20,7 @@ export default function ExportPage() {
   const getActiveEntries = useFishStore((s) => s.getActiveEntries);
   const entries = useFishStore((s) => s.entries);
   const exits = useFishStore((s) => s.exits);
+  const { getFishById } = useFishData();
 
   const handleExportActive = () => {
     const active = getActiveEntries();

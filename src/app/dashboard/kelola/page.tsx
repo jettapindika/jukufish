@@ -447,146 +447,186 @@ function KategoriTab() {
   const isOverridden = (id: string) => customIds.has(id);
 
   return (
-    <div className="flex flex-col gap-3 relative md:max-w-[600px]">
-      {showAdd && (
-        <div
-          className="rounded-lg bg-white border border-[#0E0F0F] p-4"
-          style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+    <div className="flex flex-col gap-6 relative md:max-w-[600px]">
+      <div className="flex flex-col gap-1">
+        <h2
+          className="text-[24px] font-bold text-[#1C1B1B] leading-[28.8px] tracking-[-0.24px]"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
         >
-          <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              value={addLabel}
-              onChange={(e) => setAddLabel(e.target.value)}
-              placeholder="Nama Kategori Baru"
-              className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
-              autoFocus
-            />
-            <div className="flex items-center gap-2 px-1">
-              <span className="text-xs text-[#444748]">ID:</span>
-              <span className="text-xs font-mono text-[#0E0F0F]">
-                {slugify(addLabel) || "—"}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleAddSave}
-                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-              >
-                <Check className="h-4 w-4" />
-                Simpan
-              </button>
-              <button
-                onClick={() => { setShowAdd(false); setAddLabel(""); }}
-                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
-              >
-                <X className="h-4 w-4" />
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          Kategori Stok
+        </h2>
+        <p
+          className="text-[16px] text-[#444748] leading-[24px]"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+        >
+          Kelola pengelompokan barang
+        </p>
+      </div>
 
-      {Object.entries(allCategories).map(([id, label]) => {
-        if (editingId === id) {
-          return (
-            <div
-              key={id}
-              className="rounded-lg bg-white border border-[#0E0F0F] p-4"
-              style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
-            >
+      <div className="flex flex-col gap-2">
+        {showAdd && (
+          <div
+            className="rounded-[4px] bg-white border border-[#0E0F0F] p-4"
+            style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+          >
+            <div className="flex flex-col gap-3">
               <input
                 type="text"
-                value={editLabel}
-                onChange={(e) => setEditLabel(e.target.value)}
-                placeholder="Nama Kategori"
+                value={addLabel}
+                onChange={(e) => setAddLabel(e.target.value)}
+                placeholder="Nama Kategori Baru"
                 className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
                 autoFocus
               />
-              <div className="mt-3 flex gap-2">
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-xs text-[#444748]">ID:</span>
+                <span className="text-xs font-mono text-[#0E0F0F]">
+                  {slugify(addLabel) || "—"}
+                </span>
+              </div>
+              <div className="flex gap-2">
                 <button
-                  onClick={() => handleEditSave(id)}
+                  onClick={handleAddSave}
                   className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
                 >
                   <Check className="h-4 w-4" />
                   Simpan
                 </button>
                 <button
-                  onClick={() => { setEditingId(null); setEditLabel(""); }}
+                  onClick={() => { setShowAdd(false); setAddLabel(""); }}
                   className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
                 >
                   <X className="h-4 w-4" />
                   Batal
                 </button>
               </div>
-            </div>
-          );
-        }
-
-        if (deletingId === id) {
-          return (
-            <div key={id} className="rounded-lg bg-[#BA1A1A]/5 border border-[#BA1A1A]/30 p-4">
-              <p className="text-sm font-semibold text-[#0E0F0F]">
-                Hapus kategori <span className="font-extrabold">{label}</span>? Semua ikan custom di kategori ini juga akan dihapus.
-              </p>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => handleDelete(id)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Hapus
-                </button>
-                <button
-                  onClick={() => setDeletingId(null)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
-                >
-                  <X className="h-4 w-4" />
-                  Batal
-                </button>
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <div
-            key={id}
-            className="flex items-center justify-between bg-white p-4"
-            style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
-          >
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-bold text-[#0E0F0F]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>{label}</p>
-                {isDefault(id) && !isOverridden(id) && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E5E2E1] text-[#444748] font-medium">Bawaan</span>
-                )}
-                {isOverridden(id) && isDefault(id) && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0E0F0F]/10 text-[#0E0F0F] font-medium">Diubah</span>
-                )}
-              </div>
-              <p className="text-xs text-[#444748] mt-0.5">{countFish(id)} jenis ikan</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => { setEditingId(id); setEditLabel(label); setDeletingId(null); }}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FDF8F8] text-[#0E0F0F] active:scale-95 transition-transform"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-              {!isDefault(id) && (
-                <button
-                  onClick={() => { setDeletingId(id); setEditingId(null); }}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#BA1A1A]/10 text-[#BA1A1A] active:scale-95 transition-transform"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
             </div>
           </div>
-        );
-      })}
+        )}
+
+        {Object.entries(allCategories).map(([id, label]) => {
+          if (editingId === id) {
+            return (
+              <div
+                key={id}
+                className="rounded-[4px] bg-white border border-[#0E0F0F] p-4"
+                style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+              >
+                <input
+                  type="text"
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                  placeholder="Nama Kategori"
+                  className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
+                  autoFocus
+                />
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleEditSave(id)}
+                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
+                  >
+                    <Check className="h-4 w-4" />
+                    Simpan
+                  </button>
+                  <button
+                    onClick={() => { setEditingId(null); setEditLabel(""); }}
+                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
+                  >
+                    <X className="h-4 w-4" />
+                    Batal
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          if (deletingId === id) {
+            return (
+              <div key={id} className="rounded-[4px] bg-[#BA1A1A]/5 border border-[#BA1A1A]/30 p-4">
+                <p className="text-sm font-semibold text-[#0E0F0F]">
+                  Hapus kategori <span className="font-extrabold">{label}</span>? Semua ikan custom di kategori ini juga akan dihapus.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleDelete(id)}
+                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Hapus
+                  </button>
+                  <button
+                    onClick={() => setDeletingId(null)}
+                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
+                  >
+                    <X className="h-4 w-4" />
+                    Batal
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          const defaultItem = isDefault(id);
+          const overridden = isOverridden(id);
+
+          return (
+            <div
+              key={id}
+              className="flex items-center justify-between bg-white rounded-[4px] p-4"
+              style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+            >
+              <div className="flex flex-col gap-1">
+                <p
+                  className="text-[20px] font-bold text-[#1C1B1B] leading-[26px]"
+                  style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                >
+                  {label}
+                </p>
+                {defaultItem && !overridden && (
+                  <span
+                    className="self-start rounded-[2px] bg-[#E5E2E1] px-2 py-[3.5px] text-[12px] font-bold uppercase tracking-[0.6px] text-[#444748] leading-[14.4px]"
+                    style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                  >
+                    BAWAAN
+                  </span>
+                )}
+                {overridden && (
+                  <span
+                    className="self-start rounded-[2px] bg-[#5D5F5F] px-2 py-[3.5px] text-[12px] font-bold uppercase tracking-[0.6px] text-white leading-[14.4px]"
+                    style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                  >
+                    DIUBAH
+                  </span>
+                )}
+                {!defaultItem && !overridden && (
+                  <span
+                    className="self-start rounded-[2px] bg-[#5D5F5F] px-2 py-[3.5px] text-[12px] font-bold uppercase tracking-[0.6px] text-white leading-[14.4px]"
+                    style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                  >
+                    CUSTOM
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => { setEditingId(id); setEditLabel(label); setDeletingId(null); }}
+                  className="flex h-12 w-12 items-center justify-center rounded-xl text-[#444748] active:scale-95 transition-transform"
+                >
+                  <Pencil className="h-[18px] w-[18px]" />
+                </button>
+                {(!defaultItem || overridden) && (
+                  <button
+                    onClick={() => { setDeletingId(id); setEditingId(null); }}
+                    className="flex h-12 w-12 items-center justify-center rounded-xl text-[#BA1A1A] active:scale-95 transition-transform"
+                  >
+                    <Trash2 className="h-[16px] w-[18px]" />
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {!showAdd && (
         <button
@@ -697,7 +737,22 @@ function IkanTab() {
   const isDefaultFish = (id: string) => DEFAULT_FISH.some((f) => f.id === id) && !customFishIds.has(id);
 
   return (
-    <div className="flex flex-col gap-3 relative md:max-w-[600px]">
+    <div className="flex flex-col gap-6 relative md:max-w-[600px]">
+      <div className="flex flex-col gap-1">
+        <h2
+          className="text-[24px] font-bold text-[#1C1B1B] leading-[28.8px] tracking-[-0.24px]"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+        >
+          Daftar Ikan
+        </h2>
+        <p
+          className="text-[16px] text-[#444748] leading-[24px]"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+        >
+          Kelola jenis ikan dan spesies
+        </p>
+      </div>
+
       <Select value={filterCategory} onValueChange={setFilterCategory}>
         <SelectTrigger className="h-12 rounded-lg">
           <SelectValue placeholder="Semua Kategori" />
@@ -710,121 +765,145 @@ function IkanTab() {
         </SelectContent>
       </Select>
 
-      {showAdd && (
-        <FishForm
-          localName={formLocalName}
-          name={formName}
-          category={formCategory}
-          shelfLife={formShelfLife}
-          categories={allCategories}
-          onLocalNameChange={setFormLocalName}
-          onNameChange={setFormName}
-          onCategoryChange={setFormCategory}
-          onShelfLifeChange={setFormShelfLife}
-          onSave={handleAddSave}
-          onCancel={() => { setShowAdd(false); resetForm(); }}
-        />
-      )}
+      <div className="flex flex-col gap-2">
+        {showAdd && (
+          <FishForm
+            localName={formLocalName}
+            name={formName}
+            category={formCategory}
+            shelfLife={formShelfLife}
+            categories={allCategories}
+            onLocalNameChange={setFormLocalName}
+            onNameChange={setFormName}
+            onCategoryChange={setFormCategory}
+            onShelfLifeChange={setFormShelfLife}
+            onSave={handleAddSave}
+            onCancel={() => { setShowAdd(false); resetForm(); }}
+          />
+        )}
 
-      {filteredFish.map((fish) => {
-        if (editingId === fish.id) {
-          return (
-            <FishForm
-              key={fish.id}
-              localName={formLocalName}
-              name={formName}
-              category={formCategory}
-              shelfLife={formShelfLife}
-              categories={allCategories}
-              onLocalNameChange={setFormLocalName}
-              onNameChange={setFormName}
-              onCategoryChange={setFormCategory}
-              onShelfLifeChange={setFormShelfLife}
-              onSave={() => handleEditSave(fish.id)}
-              onCancel={() => { setEditingId(null); resetForm(); }}
-            />
-          );
-        }
+        {filteredFish.map((fish) => {
+          if (editingId === fish.id) {
+            return (
+              <FishForm
+                key={fish.id}
+                localName={formLocalName}
+                name={formName}
+                category={formCategory}
+                shelfLife={formShelfLife}
+                categories={allCategories}
+                onLocalNameChange={setFormLocalName}
+                onNameChange={setFormName}
+                onCategoryChange={setFormCategory}
+                onShelfLifeChange={setFormShelfLife}
+                onSave={() => handleEditSave(fish.id)}
+                onCancel={() => { setEditingId(null); resetForm(); }}
+              />
+            );
+          }
 
-        if (deletingId === fish.id) {
-          return (
-            <div key={fish.id} className="rounded-lg bg-[#BA1A1A]/5 border border-[#BA1A1A]/30 p-4">
-              <p className="text-sm font-semibold text-[#0E0F0F]">
-                Hapus <span className="font-extrabold">{fish.localName}</span>?
-              </p>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => handleDelete(fish.id)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Hapus
-                </button>
-                <button
-                  onClick={() => setDeletingId(null)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
-                >
-                  <X className="h-4 w-4" />
-                  Batal
-                </button>
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <div
-            key={fish.id}
-            className="flex items-center justify-between bg-white p-4"
-            style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-[#0E0F0F] truncate" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>{fish.localName}</p>
-                  {isDefaultFish(fish.id) && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E5E2E1] text-[#444748] font-medium shrink-0">Bawaan</span>
-                  )}
-                  {fish.isCustom && DEFAULT_FISH.some((f) => f.id === fish.id) && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0E0F0F]/10 text-[#0E0F0F] font-medium shrink-0">Diubah</span>
-                  )}
+          if (deletingId === fish.id) {
+            return (
+              <div key={fish.id} className="rounded-[4px] bg-[#BA1A1A]/5 border border-[#BA1A1A]/30 p-4">
+                <p className="text-sm font-semibold text-[#0E0F0F]">
+                  Hapus <span className="font-extrabold">{fish.localName}</span>?
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleDelete(fish.id)}
+                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Hapus
+                  </button>
+                  <button
+                    onClick={() => setDeletingId(null)}
+                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
+                  >
+                    <X className="h-4 w-4" />
+                    Batal
+                  </button>
                 </div>
-                <p className="text-xs text-[#444748] truncate">{fish.name}</p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="text-xs text-[#444748]">
+              </div>
+            );
+          }
+
+          const isDefault = DEFAULT_FISH.some((f) => f.id === fish.id) && !customFishIds.has(fish.id);
+          const isModified = fish.isCustom && DEFAULT_FISH.some((f) => f.id === fish.id);
+
+          return (
+            <div
+              key={fish.id}
+              className="flex items-center justify-between bg-white rounded-[4px] p-4"
+              style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+            >
+              <div className="flex flex-col gap-1 min-w-0">
+                <p
+                  className="text-[20px] font-bold text-[#1C1B1B] leading-[26px] truncate"
+                  style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                >
+                  {fish.localName}
+                </p>
+                <p className="text-[14px] text-[#444748] leading-[20px] truncate">{fish.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {isDefault && (
+                    <span
+                      className="self-start rounded-[2px] bg-[#E5E2E1] px-2 py-[3.5px] text-[12px] font-bold uppercase tracking-[0.6px] text-[#444748] leading-[14.4px]"
+                      style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                    >
+                      BAWAAN
+                    </span>
+                  )}
+                  {isModified && (
+                    <span
+                      className="self-start rounded-[2px] bg-[#5D5F5F] px-2 py-[3.5px] text-[12px] font-bold uppercase tracking-[0.6px] text-white leading-[14.4px]"
+                      style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                    >
+                      DIUBAH
+                    </span>
+                  )}
+                  {!isDefault && !isModified && (
+                    <span
+                      className="self-start rounded-[2px] bg-[#5D5F5F] px-2 py-[3.5px] text-[12px] font-bold uppercase tracking-[0.6px] text-white leading-[14.4px]"
+                      style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                    >
+                      CUSTOM
+                    </span>
+                  )}
+                  <span className="text-[12px] text-[#444748] leading-[14.4px]">
                     {allCategories[fish.category] || fish.category}
                   </span>
                   <span className="h-3 w-px bg-[#E5E2E1]" />
-                  <span className="text-xs text-[#444748]">{fish.defaultShelfLifeHours}j</span>
+                  <span className="text-[12px] text-[#444748] leading-[14.4px]">{fish.defaultShelfLifeHours}j</span>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => startEdit(fish)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FDF8F8] text-[#0E0F0F] active:scale-95 transition-transform"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-              {!isDefaultFish(fish.id) && (
+              <div className="flex items-center gap-1 shrink-0">
                 <button
-                  onClick={() => { setDeletingId(fish.id); setEditingId(null); }}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#BA1A1A]/10 text-[#BA1A1A] active:scale-95 transition-transform"
+                  onClick={() => startEdit(fish)}
+                  className="flex h-12 w-12 items-center justify-center rounded-xl text-[#444748] active:scale-95 transition-transform"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Pencil className="h-[18px] w-[18px]" />
                 </button>
-              )}
+                {!isDefault && (
+                  <button
+                    onClick={() => { setDeletingId(fish.id); setEditingId(null); }}
+                    className="flex h-12 w-12 items-center justify-center rounded-xl text-[#BA1A1A] active:scale-95 transition-transform"
+                  >
+                    <Trash2 className="h-[16px] w-[18px]" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
-      {filteredFish.length === 0 && (
-        <div className="flex flex-col items-center gap-2 py-8">
-          <Fish className="h-8 w-8 text-[#444748]" />
-          <p className="text-sm text-[#444748]">Tidak ada ikan di kategori ini</p>
-        </div>
-      )}
+        {filteredFish.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-8">
+            <Fish className="h-8 w-8 text-[#444748]" />
+            <p className="text-sm text-[#444748]">Tidak ada ikan di kategori ini</p>
+          </div>
+        )}
+      </div>
 
       {!showAdd && !editingId && (
         <button
@@ -948,7 +1027,7 @@ function FishForm({
 }) {
   return (
     <div
-      className="rounded-lg bg-white border border-[#0E0F0F] p-4"
+      className="rounded-[4px] bg-white border border-[#0E0F0F] p-4"
       style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
     >
       <div className="flex flex-col gap-3">
