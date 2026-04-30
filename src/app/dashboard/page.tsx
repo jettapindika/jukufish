@@ -134,8 +134,8 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats
       </Link>
 
       <div className="grid grid-cols-2 gap-2 md:gap-3">
-        <BentoCard label="TOTAL STOK" value={(stats.totalKg / 1000).toFixed(1)} unit="Ton" />
-        <BentoCard label="MASUK HARI INI" value={String(stats.todayKg)} unit="Kg" />
+        <BentoCard label="TOTAL STOK" value={stats.totalKg === 0 ? "0" : (stats.totalKg / 1000).toFixed(1)} unit="Ton" />
+        <BentoCard label="MASUK HARI INI" value={stats.todayKg === 0 ? "0" : String(Math.round(stats.todayKg))} unit="Kg" />
       </div>
 
       <div
