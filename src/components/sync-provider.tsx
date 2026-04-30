@@ -4,18 +4,18 @@ import { useEffect, useRef, useCallback } from "react";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useFishStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
-import { fullSync, FullSyncResult, pullRemoteEntries, pullRemoteExits } from "@/lib/sync";
-import type { StockEntry, StockExit } from "@/lib/types";
+import { fullSync, FullSyncResult } from "@/lib/sync";
 
 const SYNC_INTERVAL_MS = 60_000;
 const DEBOUNCE_MS = 500;
+const REALTIME_DEBOUNCE_MS = 1_000;
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
   const isOnline = useOnlineStatus();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncingRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevQueueLenRef = useRef(0);
+  const realtimeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const runSync = useCallback(async () => {
     if (syncingRef.current) return;
@@ -94,6 +94,13 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     }, DEBOUNCE_MS);
   }, [runSync]);
 
+  const debouncedRealtimeSync = useCallback(() => {
+    if (realtimeDebounceRef.current) clearTimeout(realtimeDebounceRef.current);
+    realtimeDebounceRef.current = setTimeout(() => {
+      if (navigator.onLine) runSync();
+    }, REALTIME_DEBOUNCE_MS);
+  }, [runSync]);
+
   useEffect(() => {
     const unsub = useFishStore.subscribe((state, prev) => {
       if (state.syncQueue.length > prev.syncQueue.length) {
@@ -117,52 +124,15 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "stock_entries" },
-        async () => {
-          const store = useFishStore.getState();
-          const recentlyClearedMs = store.lastClearedAt ? Date.now() - new Date(store.lastClearedAt).getTime() : Infinity;
-          if (recentlyClearedMs < 10_000) return;
-          const newEntries = await pullRemoteEntries(store.entries, store.lastClearedAt);
-          if (newEntries.length > 0) {
-            useFishStore.getState().mergeRemoteEntries(newEntries);
-            useFishStore.getState().setSyncToast({
-              message: `${newEntries.length} stok baru diterima`,
-              timestamp: Date.now(),
-            });
-          }
-          try {
-            const { supabase: sb } = await import("@/lib/supabase");
-            const { data: allRemote } = await sb.from("stock_entries").select("id, marked_for_exit, marked_by");
-            if (allRemote) {
-              const freshStore = useFishStore.getState();
-              let updated = false;
-              const updatedEntries = freshStore.entries.map((e) => {
-                const remote = allRemote.find((r: { id: string }) => r.id === e.id);
-                if (remote && remote.marked_for_exit !== (e.markedForExit ?? false)) {
-                  updated = true;
-                  return { ...e, markedForExit: remote.marked_for_exit, markedBy: remote.marked_by };
-                }
-                return e;
-              });
-              if (updated) useFishStore.setState({ entries: updatedEntries });
-            }
-          } catch { /* offline */ }
+        () => {
+          debouncedRealtimeSync();
         }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "stock_exits" },
-        async () => {
-          const store = useFishStore.getState();
-          const recentlyClearedMs = store.lastClearedAt ? Date.now() - new Date(store.lastClearedAt).getTime() : Infinity;
-          if (recentlyClearedMs < 10_000) return;
-          const newExits = await pullRemoteExits(store.exits, store.lastClearedAt);
-          if (newExits.length > 0) {
-            useFishStore.getState().mergeRemoteExits(newExits);
-            useFishStore.getState().setSyncToast({
-              message: `${newExits.length} stok keluar diterima`,
-              timestamp: Date.now(),
-            });
-          }
+        () => {
+          debouncedRealtimeSync();
         }
       )
       .subscribe();
@@ -172,9 +142,13 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      if (realtimeDebounceRef.current) {
+        clearTimeout(realtimeDebounceRef.current);
+        realtimeDebounceRef.current = null;
+      }
       supabase.removeChannel(channel);
     };
-  }, [isOnline, runSync]);
+  }, [isOnline, runSync, debouncedRealtimeSync]);
 
   return <>{children}</>;
 }

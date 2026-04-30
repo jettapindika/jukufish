@@ -89,7 +89,7 @@ export async function pullRemoteExits(
 export async function fullSync(
   entries: StockEntry[],
   exits: StockExit[],
-  _queue: SyncQueueItem[],
+  queue: SyncQueueItem[],
   lastClearedAt?: string | null
 ): Promise<SyncResult> {
   let pushed = 0;
@@ -98,8 +98,27 @@ export async function fullSync(
   let deleted = 0;
 
   const recentlyClearedMs = lastClearedAt ? Date.now() - new Date(lastClearedAt).getTime() : Infinity;
-  if (recentlyClearedMs < 10_000) {
+  if (recentlyClearedMs < 5_000) {
     return { pushed: 0, pulled: 0, failed: 0, deleted: 0, ...emptySyncDetails() };
+  }
+
+  // Offline clear recovery: delete remote data that predates the clear timestamp
+  if (lastClearedAt && entries.length === 0 && exits.length === 0 && queue.length === 0) {
+    const { data: staleEntries } = await supabase
+      .from("stock_entries")
+      .select("id")
+      .lte("created_at", lastClearedAt);
+    const { data: staleExits } = await supabase
+      .from("stock_exits")
+      .select("id")
+      .lte("created_at", lastClearedAt);
+
+    for (const r of (staleExits ?? [])) {
+      await supabase.from("stock_exits").delete().eq("id", r.id);
+    }
+    for (const r of (staleEntries ?? [])) {
+      await supabase.from("stock_entries").delete().eq("id", r.id);
+    }
   }
 
   const { data: remoteEntries } = await supabase.from("stock_entries").select("*");
@@ -110,14 +129,31 @@ export async function fullSync(
   const localEntryIds = new Set(entries.map((e) => e.id));
   const localExitIds = new Set(exits.map((e) => e.id));
 
-  const localOnlyEntries = entries.filter((e) => !remoteEntryIds.has(e.id));
+  // Only push entries that are in the sync queue (genuinely new, created on this device).
+  // Local entries NOT on remote AND NOT in queue = deleted remotely, must not re-push.
+  const pendingEntryIds = new Set(
+    queue
+      .filter((q) => q.table === "stock_entries" && q.status === "pending")
+      .map((q) => q.recordId)
+  );
+  const pendingExitIds = new Set(
+    queue
+      .filter((q) => q.table === "stock_exits" && q.status === "pending")
+      .map((q) => q.recordId)
+  );
+
+  const localOnlyEntries = entries.filter(
+    (e) => !remoteEntryIds.has(e.id) && pendingEntryIds.has(e.id)
+  );
   for (const entry of localOnlyEntries) {
     const { error } = await supabase.from("stock_entries").upsert(entryToPayload(entry));
     if (!error) pushed++;
     else failed++;
   }
 
-  const localOnlyExits = exits.filter((e) => !remoteExitIds.has(e.id));
+  const localOnlyExits = exits.filter(
+    (e) => !remoteExitIds.has(e.id) && pendingExitIds.has(e.id)
+  );
   for (const exit of localOnlyExits) {
     const { error } = await supabase.from("stock_exits").upsert(exitToPayload(exit));
     if (!error) pushed++;
@@ -159,7 +195,7 @@ export async function fullSync(
   const deletedExitIds: string[] = [];
   if (remoteEntries) {
     for (const localEntry of entries) {
-      if (!remoteEntryIds.has(localEntry.id)) {
+      if (!remoteEntryIds.has(localEntry.id) && !pendingEntryIds.has(localEntry.id)) {
         deletedEntryIds.push(localEntry.id);
         deleted++;
       }
@@ -167,7 +203,7 @@ export async function fullSync(
   }
   if (remoteExits) {
     for (const localExit of exits) {
-      if (!remoteExitIds.has(localExit.id)) {
+      if (!remoteExitIds.has(localExit.id) && !pendingExitIds.has(localExit.id)) {
         deletedExitIds.push(localExit.id);
         deleted++;
       }
