@@ -151,7 +151,7 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="#1C1B1B"/>
-          </svg>``
+          </svg>
         </Link>
       </div>
 
@@ -314,6 +314,7 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
                 qrCode={entry.qrCode ?? "-"}
                 adminName={entry.enteredByName || (entry.enteredBy === "admin_gudang" ? "Admin" : "Pemilik")}
                 status={aging.status as 'fresh' | 'warning' | 'critical'}
+                grade={entry.grade}
                 timeRemaining={formatElapsed(aging.remainingHours)}
                 freshnessPercent={100 - aging.percentage}
                 weightKg={entry.weightKg}
@@ -337,11 +338,12 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
   );
 }
 
-function OwnerStockCard({ name, qrCode, adminName, status, timeRemaining, freshnessPercent, weightKg, enteredAt, isMarked, onToggleMark }: {
+function OwnerStockCard({ name, qrCode, adminName, status, grade, timeRemaining, freshnessPercent, weightKg, enteredAt, isMarked, onToggleMark }: {
   name: string;
   qrCode: string;
   adminName: string;
   status: 'fresh' | 'warning' | 'critical';
+  grade: string;
   timeRemaining: string;
   freshnessPercent: number;
   weightKg: number;
@@ -381,7 +383,7 @@ function OwnerStockCard({ name, qrCode, adminName, status, timeRemaining, freshn
 
       <div className="flex flex-col gap-1">
         <div className="flex justify-between items-center">
-          <span className="text-[12px] text-[#1C1B1B] leading-[14.4px]">Sisa Waktu Segar</span>
+          <span className="text-[12px] text-[#1C1B1B] leading-[14.4px]">Grade {grade}</span>
           <span className="text-[12px] font-bold text-right leading-[14.4px]" style={{ color: config.bar }}>{timeRemaining}</span>
         </div>
         <div className="w-full bg-[#E5E2E1] rounded-[12px] h-2 overflow-hidden">

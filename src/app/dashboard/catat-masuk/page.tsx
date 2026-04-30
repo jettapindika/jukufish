@@ -305,7 +305,7 @@ export default function CatatMasukPage() {
                 Berat (kg)
               </label>
               <div className="text-5xl font-extrabold text-gray-900 text-center tabular-nums mb-5">
-                {weight.toFixed(1)}
+                {Number.isInteger(weight) ? weight : weight.toFixed(1)}
               </div>
               <div className="mb-4">
                 <p className="text-xs font-semibold text-gray-500 text-center mb-2">Puluhan</p>
@@ -393,7 +393,7 @@ export default function CatatMasukPage() {
                   <Fish className="w-5 h-5 text-[var(--color-primary)]" />
                   <span className="font-semibold">{selectedFish?.localName}</span>
                 </div>
-                <span className="text-sm text-gray-500">{weight.toFixed(1)} kg</span>
+                <span className="text-sm text-gray-500">{Number.isInteger(weight) ? weight : weight.toFixed(1)} kg</span>
               </div>
             </div>
 
@@ -447,7 +447,7 @@ export default function CatatMasukPage() {
                   <span className="font-semibold">{selectedFish?.localName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">{weight.toFixed(1)} kg</span>
+                  <span className="text-sm text-gray-500">{Number.isInteger(weight) ? weight : weight.toFixed(1)} kg</span>
                   <span className="text-xs px-2 py-0.5 bg-[var(--color-primary)] text-white rounded font-bold">
                     {grade}
                   </span>
@@ -532,7 +532,7 @@ export default function CatatMasukPage() {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-500 text-sm">Berat</span>
-                  <span className="font-bold text-lg">{weight.toFixed(1)} kg</span>
+                  <span className="font-bold text-lg">{Number.isInteger(weight) ? weight : weight.toFixed(1)} kg</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-500 text-sm">Grade</span>

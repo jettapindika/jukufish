@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft, Plus, Pencil, Trash2, Fish, Check, X, Download, FileSpreadsheet, Users, Copy, UserCheck, UserX, Key, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Fish, Check, X, Download, FileSpreadsheet, Users, Copy, UserCheck, UserX, Key, AlertTriangle, MoreVertical } from "lucide-react";
 import { useFishStore } from "@/lib/store";
 import { syncApproveUser, syncRejectUser, syncSaveInviteCode, syncGetAllUsers } from "@/lib/auth-sync";
 import { DEFAULT_CATEGORIES, DEFAULT_FISH, getAllCategories, getAllFish } from "@/lib/fish-data";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import type { FishType } from "@/lib/types";
+
+const TABS = ["tim", "kategori", "ikan", "shelf"] as const;
+type TabKey = (typeof TABS)[number];
+const TAB_LABELS: Record<TabKey, string> = { tim: "Tim", kategori: "Kategori", ikan: "Ikan", shelf: "Shelf Life" };
 
 export default function KelolaIkanPage() {
   const router = useRouter();
@@ -20,39 +23,41 @@ export default function KelolaIkanPage() {
     }
   }, [currentRole, router]);
 
-  const [activeTab, setActiveTab] = useState<"tim" | "kategori" | "ikan" | "shelf" | "export">("tim");
+  const [activeTab, setActiveTab] = useState<TabKey>("tim");
 
   if (currentRole !== "pemilik") return null;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-128px)]">
-      <div className="flex items-center gap-3 px-4 md:px-0 pt-4">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] active:scale-95 transition-transform"
+      <div className="flex flex-col gap-4 px-4 md:px-0 pt-4">
+        <h1
+          className="text-[32px] font-bold text-[#0E0F0F] tracking-[-0.64px] leading-[38.4px]"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
         >
-          <ChevronLeft className="h-5 w-5 text-[var(--color-foreground)]" />
-        </button>
-        <h1 className="text-lg font-extrabold text-[var(--color-foreground)]">Kelola</h1>
-      </div>
+          Kelola
+        </h1>
 
-      <div className="flex gap-2 px-4 md:px-0 mt-4 overflow-x-auto hide-scrollbar md:max-w-[600px]">
-        {(["tim", "kategori", "ikan", "shelf", "export"] as const).map((tab) => {
-          const labels = { tim: "Tim", kategori: "Kategori", ikan: "Ikan", shelf: "Shelf Life", export: "Export" };
-          return (
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 px-4 -mx-4 md:mx-0 md:px-0">
+          {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 shrink-0 h-12 rounded-xl text-xs font-bold transition-colors ${
+              className={`shrink-0 h-10 px-4 rounded-xl text-sm font-bold tracking-[0.28px] transition-all ${
                 activeTab === tab
-                  ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]"
-                  : "bg-[var(--color-surface)] text-[var(--color-muted)] border border-[var(--color-border)]"
+                  ? "bg-[#0E0F0F] text-white"
+                  : "bg-[#F1EDEC] text-[#1C1B1B]"
               }`}
+              style={{
+                fontFamily: "Helvetica, Arial, sans-serif",
+                boxShadow: activeTab === tab
+                  ? "0px 2px 2px rgba(0,0,0,0.1), 0px 8px 8px rgba(0,0,0,0.08), 0px 15px 17.5px rgba(0,0,0,0.05)"
+                  : "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)",
+              }}
             >
-              {labels[tab]}
+              {TAB_LABELS[tab]}
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 px-4 md:px-0 mt-4 pb-24">
@@ -60,11 +65,28 @@ export default function KelolaIkanPage() {
         {activeTab === "kategori" && <KategoriTab />}
         {activeTab === "ikan" && <IkanTab />}
         {activeTab === "shelf" && <ShelfLifeTab />}
-        {activeTab === "export" && <ExportTab />}
       </div>
     </div>
   );
 }
+
+const IconKey = () => (
+  <svg width="22" height="12" viewBox="0 0 22 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 12C5.33333 12 3.91667 11.4167 2.75 10.25C1.58333 9.08333 1 7.66667 1 6C1 4.33333 1.58333 2.91667 2.75 1.75C3.91667 0.583333 5.33333 0 7 0C8.11667 0 9.12917 0.275 10.0375 0.825C10.9458 1.375 11.6667 2.1 12.2 3H22V9H19V12H15V9H12.2C11.6667 9.9 10.9458 10.625 10.0375 11.175C9.12917 11.725 8.11667 12 7 12ZM7 9C7.93333 9 8.74167 8.71667 9.425 8.15C10.1083 7.58333 10.55 6.86667 10.75 6H16V9H17V6H20V5H10.75C10.55 4.13333 10.1083 3.41667 9.425 2.85C8.74167 2.28333 7.93333 2 7 2C5.9 2 4.95833 2.39167 4.175 3.175C3.39167 3.95833 3 4.9 3 6C3 7.1 3.39167 8.04167 4.175 8.825C4.95833 9.60833 5.9 10 7 10V9ZM6 7.5C6.41667 7.5 6.77083 7.35417 7.0625 7.0625C7.35417 6.77083 7.5 6.41667 7.5 6C7.5 5.58333 7.35417 5.22917 7.0625 4.9375C6.77083 4.64583 6.41667 4.5 6 4.5C5.58333 4.5 5.22917 4.64583 4.9375 4.9375C4.64583 5.22917 4.5 5.58333 4.5 6C4.5 6.41667 4.64583 6.77083 4.9375 7.0625C5.22917 7.35417 5.58333 7.5 6 7.5Z" fill="#0E0F0F" />
+  </svg>
+);
+
+const IconCopy = () => (
+  <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3.5 9.5C3.0875 9.5 2.73438 9.35313 2.44063 9.05938C2.14688 8.76563 2 8.4125 2 8V1.5C2 1.0875 2.14688 0.734375 2.44063 0.440625C2.73438 0.146875 3.0875 0 3.5 0H8.5C8.9125 0 9.26563 0.146875 9.55938 0.440625C9.85313 0.734375 10 1.0875 10 1.5V8C10 8.4125 9.85313 8.76563 9.55938 9.05938C9.26563 9.35313 8.9125 9.5 8.5 9.5H3.5ZM3.5 8.5H8.5C8.6375 8.5 8.76042 8.44271 8.86875 8.32813C8.97708 8.21354 9.03125 8.0875 9.03125 7.95V1.55C9.03125 1.4125 8.97396 1.28958 8.85938 1.18125C8.74479 1.07292 8.61875 1.01875 8.48125 1.01875H3.51875C3.38125 1.01875 3.25833 1.07604 3.15 1.19063C3.04167 1.30521 2.9875 1.43125 2.9875 1.56875V7.98125C2.9875 8.11875 3.04479 8.24167 3.15938 8.35C3.27396 8.45833 3.4 8.5125 3.5375 8.5125L3.5 8.5ZM1.5 11.5C1.0875 11.5 0.734375 11.3531 0.440625 11.0594C0.146875 10.7656 0 10.4125 0 10V2.5H1V10C1 10.1375 1.05729 10.2604 1.17188 10.3688C1.28646 10.4771 1.4125 10.5313 1.55 10.5313H7.5V11.5H1.5Z" fill="white" />
+  </svg>
+);
+
+const IconPersonAdd = () => (
+  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17 8V5H15V3H17V0H19V3H21V5H19V8H17ZM8 8C6.9 8 5.95833 7.60833 5.175 6.825C4.39167 6.04167 4 5.1 4 4C4 2.9 4.39167 1.95833 5.175 1.175C5.95833 0.391667 6.9 0 8 0C9.1 0 10.0417 0.391667 10.825 1.175C11.6083 1.95833 12 2.9 12 4C12 5.1 11.6083 6.04167 10.825 6.825C10.0417 7.60833 9.1 8 8 8ZM0 16V13.2C0 12.6333 0.145833 12.1125 0.4375 11.6375C0.729167 11.1625 1.11667 10.8 1.6 10.55C2.63333 10.0333 3.68333 9.64583 4.75 9.3875C5.81667 9.12917 6.9 9 8 9C9.1 9 10.1833 9.12917 11.25 9.3875C12.3167 9.64583 13.3667 10.0333 14.4 10.55C14.8833 10.8 15.2708 11.1625 15.5625 11.6375C15.8542 12.1125 16 12.6333 16 13.2V16H0ZM2 14H14V13.2C14 13.0167 13.9542 12.85 13.8625 12.7C13.7708 12.55 13.65 12.4333 13.5 12.35C12.6 11.9 11.6917 11.5625 10.775 11.3375C9.85833 11.1125 8.93333 11 8 11C7.06667 11 6.14167 11.1125 5.225 11.3375C4.30833 11.5625 3.4 11.9 2.5 12.35C2.35 12.4333 2.22917 12.55 2.1375 12.7C2.04583 12.85 2 13.0167 2 13.2V14ZM8 6C8.55 6 9.02083 5.80417 9.4125 5.4125C9.80417 5.02083 10 4.55 10 4C10 3.45 9.80417 2.97917 9.4125 2.5875C9.02083 2.19583 8.55 2 8 2C7.45 2 6.97917 2.19583 6.5875 2.5875C6.19583 2.97917 6 3.45 6 4C6 4.55 6.19583 5.02083 6.5875 5.4125C6.97917 5.80417 7.45 6 8 6Z" fill="white" />
+  </svg>
+);
 
 function TimTab() {
   const currentUser = useFishStore((s) => s.currentUser);
@@ -75,6 +97,8 @@ function TimTab() {
   const resetInviteCode = useFishStore((s) => s.resetInviteCode);
   const generateInviteCode = useFishStore((s) => s.generateInviteCode);
   const [copied, setCopied] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   useEffect(() => {
     syncGetAllUsers().then((remoteUsers) => {
@@ -88,9 +112,18 @@ function TimTab() {
     });
   }, []);
 
-  const pendingUsers = users.filter((u) => u.approved === false);
-  const approvedAdmins = users.filter((u) => u.approved !== false && u.role === "admin_gudang");
+  const uniqueUsers = useMemo(() => {
+    const seen = new Set<string>();
+    return users.filter((u) => {
+      if (seen.has(u.id)) return false;
+      seen.add(u.id);
+      return true;
+    });
+  }, [users]);
+  const pendingUsers = uniqueUsers.filter((u) => u.approved === false);
+  const approvedUsers = uniqueUsers.filter((u) => u.approved === true && u.role === "admin_gudang");
   const activeCode = inviteCodes.find((c) => c.active !== false) ?? null;
+  const totalMembers = approvedUsers.length + pendingUsers.length + 1;
 
   async function handleResetCode() {
     const code = resetInviteCode();
@@ -109,168 +142,252 @@ function TimTab() {
     });
   }
 
+  function getInitials(name: string): string {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  }
+
   return (
-    <div className="flex flex-col gap-5 md:max-w-[600px]">
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Key className="h-4 w-4 text-[var(--color-primary)]" />
-          <p className="text-sm font-bold text-[var(--color-foreground)]">Kode Undangan</p>
+    <div className="flex flex-col gap-4 md:max-w-[600px]">
+      <div
+        className="flex flex-col gap-2 rounded-lg bg-white p-4"
+        style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+      >
+        <div className="flex items-center gap-2">
+          <IconKey />
+          <span
+            className="text-xl font-bold text-[#0E0F0F] leading-[26px]"
+            style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+          >
+            Kode Undangan
+          </span>
         </div>
-        <p className="text-xs text-[var(--color-muted)] mb-3">
-          Bagikan kode ini ke admin gudang untuk mendaftar. Satu kode bisa dipakai banyak pegawai.
+        <p
+          className="text-base text-[#444748] leading-6"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+        >
+          Berikan kode ini kepada karyawan baru untuk bergabung dengan tim Gudang Utama.
         </p>
+
         {!activeCode ? (
           <button
             onClick={handleCreateFirstCode}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-[var(--radius)] bg-[var(--color-primary)] text-sm font-bold text-[var(--color-on-primary)] active:scale-[0.97] transition-transform"
+            className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
           >
-            <Key className="h-5 w-5" />
+            <Key className="h-4 w-4" />
             Buat Kode Undangan
           </button>
         ) : (
-          <div
-            className="rounded-[var(--radius)] bg-[var(--color-surface)] p-4"
-            style={{ boxShadow: "var(--shadow-card)" }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-mono text-xl font-bold text-[var(--color-foreground)] tracking-widest">
-                  {activeCode.code}
-                </p>
-                <p className="text-xs text-[var(--color-muted)] mt-1">
-                  {approvedAdmins.length} pegawai aktif · {pendingUsers.length} menunggu
-                </p>
-              </div>
+          <div className="mt-1">
+            <div
+              className="relative flex items-center justify-between rounded p-2"
+              style={{ backgroundColor: "#F7F3F2", boxShadow: "inset 0px 2px 4px rgba(0,0,0,0.05)" }}
+            >
+              <span
+                className="text-xl font-bold text-[#0E0F0F] tracking-[2px] leading-7"
+                style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+              >
+                {activeCode.code}
+              </span>
               <button
                 onClick={() => handleCopy(activeCode.code)}
-                className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] bg-[var(--color-background)] text-[var(--color-muted)] active:scale-95 transition-transform"
+                className="flex h-10 w-10 items-center justify-center bg-[#0E0F0F] active:scale-95 transition-transform"
+                style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
               >
-                {copied ? <Check className="h-4 w-4 text-[var(--color-fresh)]" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-3 w-3 text-white" /> : <IconCopy />}
               </button>
             </div>
-            <button
-              onClick={handleResetCode}
-              className="mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-[var(--radius)] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
-            >
-              <Key className="h-3.5 w-3.5" />
-              Reset Kode
-            </button>
           </div>
         )}
       </div>
 
-      {pendingUsers.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-4 w-4 text-[var(--color-warning)]" />
-            <p className="text-sm font-bold text-[var(--color-foreground)]">Menunggu Persetujuan</p>
-            <span className="ml-auto rounded-full bg-[var(--color-warning)]/10 px-2 py-0.5 text-xs font-bold text-[var(--color-warning)]">
-              {pendingUsers.length}
-            </span>
-          </div>
-          <div className="flex flex-col gap-2">
-            {pendingUsers.map((user) => (
-              <div
-                key={user.id}
-                className="rounded-[var(--radius)] bg-[var(--color-surface)] p-4"
-                style={{ boxShadow: "var(--shadow-card)" }}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-[var(--color-foreground)]">{user.name}</p>
-                    <p className="text-xs text-[var(--color-muted)]">{user.email}</p>
-                    <p className="text-xs text-[var(--color-muted)] mt-1">
-                      {user.role === "admin_gudang" ? "Admin Gudang" : "Pemilik"} · {new Date(user.createdAt).toLocaleDateString("id-ID")}
-                    </p>
-                  </div>
+      <div className="flex flex-col gap-2 pt-2">
+        <div className="flex items-center justify-between">
+          <h2
+            className="text-2xl font-bold text-[#0E0F0F] tracking-[-0.24px] leading-[28.8px]"
+            style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+          >
+            Anggota Tim
+          </h2>
+          <span
+            className="rounded-xl bg-[#F1EDEC] px-2 py-1 text-sm font-bold text-[#444748] tracking-[0.28px]"
+            style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+          >
+            {totalMembers} Orang
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {pendingUsers.map((user) => (
+            <div
+              key={`pending-${user.id}`}
+              className="flex items-center justify-between bg-white p-4"
+              style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: "#E5E2E1", boxShadow: "inset 0px 2px 4px rgba(0,0,0,0.05)" }}
+                >
+                  <span className="text-xl font-bold text-[#444748] leading-[26px]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                    {getInitials(user.name)}
+                  </span>
                 </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={async () => { approveUser(user.id); try { await syncApproveUser(user.id); } catch { /* offline */ } }}
-                    className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius)] bg-[var(--color-fresh)] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-                  >
-                    <UserCheck className="h-4 w-4" />
-                    Setujui
-                  </button>
-                  <button
-                    onClick={async () => { rejectUser(user.id); try { await syncRejectUser(user.id); } catch { /* offline */ } }}
-                    className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius)] bg-[var(--color-critical)]/10 text-sm font-bold text-[var(--color-critical)] active:scale-[0.97] transition-transform"
-                  >
-                    <UserX className="h-4 w-4" />
-                    Tolak
-                  </button>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-[#0E0F0F] tracking-[0.28px]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                    {user.name}
+                  </span>
+                  <span className="text-xs text-[#444748]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                    Menunggu Konfirmasi
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={async () => { rejectUser(user.id); try { await syncRejectUser(user.id); } catch { /* offline */ } }}
+                  className="flex h-10 w-10 items-center justify-center bg-[#BA1A1A] active:scale-95 transition-transform"
+                  style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+                >
+                  <X className="h-3 w-3 text-white" strokeWidth={3} />
+                </button>
+                <button
+                  onClick={async () => { approveUser(user.id); try { await syncApproveUser(user.id); } catch { /* offline */ } }}
+                  className="flex h-10 w-10 items-center justify-center bg-[#0E0F0F] active:scale-95 transition-transform"
+                  style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+                >
+                  <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+          ))}
 
-      {approvedAdmins.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-4 w-4 text-[var(--color-fresh)]" />
-            <p className="text-sm font-bold text-[var(--color-foreground)]">Pegawai Aktif ({approvedAdmins.length})</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            {approvedAdmins.map((user) => (
-              <RemovableAdmin key={user.id} user={user} onRemove={async (id) => {
-                rejectUser(id);
-                try { await syncRejectUser(id); } catch { /* offline */ }
-              }} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+          {currentUser && (
+            <div
+              className="flex items-center justify-between bg-white p-4"
+              style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: "#0E0F0F", boxShadow: "inset 0px 2px 4px rgba(0,0,0,0.05)" }}
+                >
+                  <span className="text-xl font-bold text-white leading-[26px]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                    {getInitials(currentUser.name)}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-bold text-[#0E0F0F] tracking-[0.28px]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {currentUser.name}
+                    </span>
+                    <span
+                      className="rounded-xl bg-[#262423] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.5px] text-white leading-[15px]"
+                      style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                    >
+                      PEMILIK
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#444748]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                    Pemilik Gudang
+                  </span>
+                </div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center">
+                <MoreVertical className="h-4 w-4 text-[#444748]" />
+              </div>
+            </div>
+          )}
 
-function RemovableAdmin({ user, onRemove }: { user: { id: string; name: string; email: string; role: string }; onRemove: (id: string) => void }) {
-  const [confirming, setConfirming] = useState(false);
+          {approvedUsers.map((user) => {
+            if (removingId === user.id) {
+              return (
+                <div
+                  key={`approved-${user.id}`}
+                  className="rounded-lg border border-[#BA1A1A]/30 bg-[#BA1A1A]/5 p-4"
+                >
+                  <p className="text-sm font-semibold text-[#0E0F0F]">
+                    Hapus <span className="font-extrabold">{user.name}</span> dari tim?
+                  </p>
+                  <p className="text-xs text-[#444748] mt-1">Pegawai tidak akan bisa login lagi.</p>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={async () => { rejectUser(user.id); setRemovingId(null); try { await syncRejectUser(user.id); } catch { /* offline */ } }}
+                      className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
+                    >
+                      <UserX className="h-4 w-4" />
+                      Hapus
+                    </button>
+                    <button
+                      onClick={() => setRemovingId(null)}
+                      className="flex h-11 flex-1 items-center justify-center rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              );
+            }
 
-  if (confirming) {
-    return (
-      <div
-        className="rounded-[var(--radius)] bg-[var(--color-critical)]/5 border border-[var(--color-critical)]/20 p-4"
-      >
-        <p className="text-sm font-semibold text-[var(--color-foreground)]">
-          Hapus <span className="font-extrabold">{user.name}</span> dari tim?
-        </p>
-        <p className="text-xs text-[var(--color-muted)] mt-1">Pegawai tidak akan bisa login lagi.</p>
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => { onRemove(user.id); setConfirming(false); }}
-            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius)] bg-[var(--color-critical)] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-          >
-            <UserX className="h-4 w-4" />
-            Hapus
-          </button>
-          <button
-            onClick={() => setConfirming(false)}
-            className="flex h-11 flex-1 items-center justify-center rounded-[var(--radius)] bg-[var(--color-surface)] border border-[var(--color-border)] text-sm font-bold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
-          >
-            Batal
-          </button>
+            return (
+              <div
+                key={`approved-${user.id}`}
+                className="flex items-center justify-between bg-white p-4"
+                style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+              >
+                <div className="flex items-center gap-4">
+                  <div
+                    className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: "#E5E2E1", boxShadow: "inset 0px 2px 4px rgba(0,0,0,0.05)" }}
+                  >
+                    <span className="text-xl font-bold text-[#444748] leading-[26px]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {getInitials(user.name)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold text-[#0E0F0F] tracking-[0.28px]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                        {user.name}
+                      </span>
+                      {user.role === "admin_gudang" && (
+                        <span
+                          className="rounded-xl bg-[#262423] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.5px] text-white leading-[15px]"
+                          style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+                        >
+                          ADMIN
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-[#444748]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {user.role === "admin_gudang" ? "Staf Inventori" : "Pemilik"}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (menuOpenId === user.id) {
+                      setMenuOpenId(null);
+                    } else {
+                      setMenuOpenId(user.id);
+                      setRemovingId(user.id);
+                    }
+                  }}
+                  className="flex h-10 w-10 items-center justify-center active:scale-95 transition-transform"
+                >
+                  <MoreVertical className="h-4 w-4 text-[#444748]" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div
-      className="flex items-center justify-between rounded-[var(--radius)] bg-[var(--color-surface)] p-4"
-      style={{ boxShadow: "var(--shadow-card)" }}
-    >
-      <div>
-        <p className="text-sm font-bold text-[var(--color-foreground)]">{user.name}</p>
-        <p className="text-xs text-[var(--color-muted)]">{user.email}</p>
-      </div>
       <button
-        onClick={() => setConfirming(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] bg-[var(--color-critical)]/10 text-[var(--color-critical)] active:scale-95 transition-transform"
+        onClick={handleCreateFirstCode}
+        className="fixed bottom-24 right-4 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-xl bg-[#0E0F0F] active:scale-90 transition-transform"
+        style={{ boxShadow: "0px 2px 2px rgba(0,0,0,0.1), 0px 8px 8px rgba(0,0,0,0.08), 0px 15px 17.5px rgba(0,0,0,0.05)" }}
       >
-        <UserX className="h-4 w-4" />
+        <IconPersonAdd />
       </button>
     </div>
   );
@@ -328,38 +445,40 @@ function KategoriTab() {
 
   const isDefault = (id: string) => id in DEFAULT_CATEGORIES;
   const isOverridden = (id: string) => customIds.has(id);
-  const getLabel = (id: string) => allCategories[id] ?? id;
 
   return (
     <div className="flex flex-col gap-3 relative md:max-w-[600px]">
       {showAdd && (
-        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-primary)] p-4">
+        <div
+          className="rounded-lg bg-white border border-[#0E0F0F] p-4"
+          style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+        >
           <div className="flex flex-col gap-3">
             <input
               type="text"
               value={addLabel}
               onChange={(e) => setAddLabel(e.target.value)}
               placeholder="Nama Kategori Baru"
-              className="h-12 w-full rounded-xl border border-gray-300 bg-[var(--color-background)] px-4 text-base text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
               autoFocus
             />
             <div className="flex items-center gap-2 px-1">
-              <span className="text-xs text-[var(--color-muted)]">ID:</span>
-              <span className="text-xs font-mono text-[var(--color-foreground)]">
+              <span className="text-xs text-[#444748]">ID:</span>
+              <span className="text-xs font-mono text-[#0E0F0F]">
                 {slugify(addLabel) || "—"}
               </span>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={handleAddSave}
-                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-sm font-bold text-[var(--color-on-primary)] active:scale-[0.97] transition-transform"
+                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
               >
                 <Check className="h-4 w-4" />
                 Simpan
               </button>
               <button
                 onClick={() => { setShowAdd(false); setAddLabel(""); }}
-                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-sm font-bold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
+                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
               >
                 <X className="h-4 w-4" />
                 Batal
@@ -372,26 +491,30 @@ function KategoriTab() {
       {Object.entries(allCategories).map(([id, label]) => {
         if (editingId === id) {
           return (
-            <div key={id} className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-primary)] p-4">
+            <div
+              key={id}
+              className="rounded-lg bg-white border border-[#0E0F0F] p-4"
+              style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+            >
               <input
                 type="text"
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
                 placeholder="Nama Kategori"
-                className="h-12 w-full rounded-xl border border-gray-300 bg-[var(--color-background)] px-4 text-base text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
                 autoFocus
               />
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => handleEditSave(id)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-sm font-bold text-[var(--color-on-primary)] active:scale-[0.97] transition-transform"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
                 >
                   <Check className="h-4 w-4" />
                   Simpan
                 </button>
                 <button
                   onClick={() => { setEditingId(null); setEditLabel(""); }}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-sm font-bold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
                 >
                   <X className="h-4 w-4" />
                   Batal
@@ -403,21 +526,21 @@ function KategoriTab() {
 
         if (deletingId === id) {
           return (
-            <div key={id} className="rounded-xl bg-[var(--color-critical)]/5 border border-[var(--color-critical)]/30 p-4">
-              <p className="text-sm font-semibold text-[var(--color-foreground)]">
+            <div key={id} className="rounded-lg bg-[#BA1A1A]/5 border border-[#BA1A1A]/30 p-4">
+              <p className="text-sm font-semibold text-[#0E0F0F]">
                 Hapus kategori <span className="font-extrabold">{label}</span>? Semua ikan custom di kategori ini juga akan dihapus.
               </p>
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => handleDelete(id)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-critical)] text-sm font-bold text-white active:scale-[0.97] transition-transform"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
                 >
                   <Trash2 className="h-4 w-4" />
                   Hapus
                 </button>
                 <button
                   onClick={() => setDeletingId(null)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-sm font-bold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
                 >
                   <X className="h-4 w-4" />
                   Batal
@@ -430,31 +553,32 @@ function KategoriTab() {
         return (
           <div
             key={id}
-            className="flex items-center justify-between rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4"
+            className="flex items-center justify-between bg-white p-4"
+            style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
           >
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-sm font-bold text-[var(--color-foreground)]">{label}</p>
+                <p className="text-sm font-bold text-[#0E0F0F]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>{label}</p>
                 {isDefault(id) && !isOverridden(id) && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-muted)] font-medium">Bawaan</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E5E2E1] text-[#444748] font-medium">Bawaan</span>
                 )}
                 {isOverridden(id) && isDefault(id) && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium">Diubah</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0E0F0F]/10 text-[#0E0F0F] font-medium">Diubah</span>
                 )}
               </div>
-              <p className="text-xs text-[var(--color-muted)] mt-0.5">{countFish(id)} jenis ikan</p>
+              <p className="text-xs text-[#444748] mt-0.5">{countFish(id)} jenis ikan</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => { setEditingId(id); setEditLabel(label); setDeletingId(null); }}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-background)] text-[var(--color-primary)] active:scale-95 transition-transform"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FDF8F8] text-[#0E0F0F] active:scale-95 transition-transform"
               >
                 <Pencil className="h-4 w-4" />
               </button>
               {!isDefault(id) && (
                 <button
                   onClick={() => { setDeletingId(id); setEditingId(null); }}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-critical)]/10 text-[var(--color-critical)] active:scale-95 transition-transform"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#BA1A1A]/10 text-[#BA1A1A] active:scale-95 transition-transform"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -467,9 +591,10 @@ function KategoriTab() {
       {!showAdd && (
         <button
           onClick={() => { setShowAdd(true); setEditingId(null); setDeletingId(null); }}
-          className="fixed bottom-24 right-5 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 active:scale-90 transition-transform"
+          className="fixed bottom-24 right-4 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-xl bg-[#0E0F0F] text-white active:scale-90 transition-transform"
+          style={{ boxShadow: "0px 2px 2px rgba(0,0,0,0.1), 0px 8px 8px rgba(0,0,0,0.08), 0px 15px 17.5px rgba(0,0,0,0.05)" }}
         >
-          <Plus className="h-7 w-7" />
+          <Plus className="h-6 w-6" />
         </button>
       )}
     </div>
@@ -574,7 +699,7 @@ function IkanTab() {
   return (
     <div className="flex flex-col gap-3 relative md:max-w-[600px]">
       <Select value={filterCategory} onValueChange={setFilterCategory}>
-        <SelectTrigger className="h-12 rounded-xl">
+        <SelectTrigger className="h-12 rounded-lg">
           <SelectValue placeholder="Semua Kategori" />
         </SelectTrigger>
         <SelectContent>
@@ -623,21 +748,21 @@ function IkanTab() {
 
         if (deletingId === fish.id) {
           return (
-            <div key={fish.id} className="rounded-xl bg-[var(--color-critical)]/5 border border-[var(--color-critical)]/30 p-4">
-              <p className="text-sm font-semibold text-[var(--color-foreground)]">
+            <div key={fish.id} className="rounded-lg bg-[#BA1A1A]/5 border border-[#BA1A1A]/30 p-4">
+              <p className="text-sm font-semibold text-[#0E0F0F]">
                 Hapus <span className="font-extrabold">{fish.localName}</span>?
               </p>
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => handleDelete(fish.id)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-critical)] text-sm font-bold text-white active:scale-[0.97] transition-transform"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
                 >
                   <Trash2 className="h-4 w-4" />
                   Hapus
                 </button>
                 <button
                   onClick={() => setDeletingId(null)}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-sm font-bold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
                 >
                   <X className="h-4 w-4" />
                   Batal
@@ -650,40 +775,41 @@ function IkanTab() {
         return (
           <div
             key={fish.id}
-            className="flex items-center justify-between rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4"
+            className="flex items-center justify-between bg-white p-4"
+            style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-[var(--color-foreground)] truncate">{fish.localName}</p>
+                  <p className="text-sm font-bold text-[#0E0F0F] truncate" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>{fish.localName}</p>
                   {isDefaultFish(fish.id) && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-muted)] font-medium shrink-0">Bawaan</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E5E2E1] text-[#444748] font-medium shrink-0">Bawaan</span>
                   )}
                   {fish.isCustom && DEFAULT_FISH.some((f) => f.id === fish.id) && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium shrink-0">Diubah</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0E0F0F]/10 text-[#0E0F0F] font-medium shrink-0">Diubah</span>
                   )}
                 </div>
-                <p className="text-xs text-[var(--color-muted)] truncate">{fish.name}</p>
+                <p className="text-xs text-[#444748] truncate">{fish.name}</p>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="text-xs text-[var(--color-muted)]">
+                  <span className="text-xs text-[#444748]">
                     {allCategories[fish.category] || fish.category}
                   </span>
-                  <span className="h-3 w-px bg-[var(--color-border)]" />
-                  <span className="text-xs text-[var(--color-muted)]">{fish.defaultShelfLifeHours}j</span>
+                  <span className="h-3 w-px bg-[#E5E2E1]" />
+                  <span className="text-xs text-[#444748]">{fish.defaultShelfLifeHours}j</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => startEdit(fish)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-background)] text-[var(--color-primary)] active:scale-95 transition-transform"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FDF8F8] text-[#0E0F0F] active:scale-95 transition-transform"
               >
                 <Pencil className="h-4 w-4" />
               </button>
               {!isDefaultFish(fish.id) && (
                 <button
                   onClick={() => { setDeletingId(fish.id); setEditingId(null); }}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-critical)]/10 text-[var(--color-critical)] active:scale-95 transition-transform"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#BA1A1A]/10 text-[#BA1A1A] active:scale-95 transition-transform"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -695,17 +821,18 @@ function IkanTab() {
 
       {filteredFish.length === 0 && (
         <div className="flex flex-col items-center gap-2 py-8">
-          <Fish className="h-8 w-8 text-[var(--color-muted)]" />
-          <p className="text-sm text-[var(--color-muted)]">Tidak ada ikan di kategori ini</p>
+          <Fish className="h-8 w-8 text-[#444748]" />
+          <p className="text-sm text-[#444748]">Tidak ada ikan di kategori ini</p>
         </div>
       )}
 
       {!showAdd && !editingId && (
         <button
           onClick={() => { setShowAdd(true); setEditingId(null); setDeletingId(null); resetForm(); }}
-          className="fixed bottom-24 right-5 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 active:scale-90 transition-transform"
+          className="fixed bottom-24 right-4 md:right-10 lg:right-14 z-40 flex h-14 w-14 items-center justify-center rounded-xl bg-[#0E0F0F] text-white active:scale-90 transition-transform"
+          style={{ boxShadow: "0px 2px 2px rgba(0,0,0,0.1), 0px 8px 8px rgba(0,0,0,0.08), 0px 15px 17.5px rgba(0,0,0,0.05)" }}
         >
-          <Plus className="h-7 w-7" />
+          <Plus className="h-6 w-6" />
         </button>
       )}
     </div>
@@ -735,13 +862,13 @@ function ShelfLifeTab() {
 
   return (
     <div className="flex flex-col gap-5 md:max-w-[600px]">
-      <p className="text-xs text-[var(--color-muted)]">
+      <p className="text-xs text-[#444748]">
         Atur berapa jam ikan bisa disimpan di cold storage sebelum dianggap kritis.
       </p>
 
       {grouped.map(([catId, fishList]) => (
         <div key={catId}>
-          <p className="text-xs font-bold text-[var(--color-primary)] uppercase tracking-wide mb-2">
+          <p className="text-xs font-bold text-[#0E0F0F] uppercase tracking-wide mb-2">
             {allCategories[catId] ?? catId}
           </p>
           <div className="flex flex-col gap-2">
@@ -752,32 +879,33 @@ function ShelfLifeTab() {
               return (
                 <div
                   key={fish.id}
-                  className="flex items-center justify-between rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-3"
+                  className="flex items-center justify-between bg-white p-3 rounded-lg"
+                  style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
                 >
                   <div className="min-w-0 mr-3">
-                    <p className="text-sm font-bold text-[var(--color-foreground)] truncate">{fish.localName}</p>
-                    <p className="text-xs text-[var(--color-muted)] truncate">{fish.name}</p>
+                    <p className="text-sm font-bold text-[#0E0F0F] truncate" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>{fish.localName}</p>
+                    <p className="text-xs text-[#444748] truncate">{fish.name}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => setShelfLifeOverride(fish.id, Math.max(1, currentHours - 1))}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-background)] border border-[var(--color-border)] text-sm font-bold active:scale-95 transition-transform"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FDF8F8] border border-[#E5E2E1] text-sm font-bold active:scale-95 transition-transform"
                     >
                       -
                     </button>
-                    <span className={`min-w-[40px] text-center text-sm font-extrabold ${isOverridden ? "text-[var(--color-primary)]" : "text-[var(--color-foreground)]"}`}>
+                    <span className={`min-w-[40px] text-center text-sm font-extrabold ${isOverridden ? "text-[#0E0F0F]" : "text-[#0E0F0F]"}`}>
                       {currentHours}j
                     </span>
                     <button
                       onClick={() => setShelfLifeOverride(fish.id, currentHours + 1)}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-background)] border border-[var(--color-border)] text-sm font-bold active:scale-95 transition-transform"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FDF8F8] border border-[#E5E2E1] text-sm font-bold active:scale-95 transition-transform"
                     >
                       +
                     </button>
                     {isOverridden && (
                       <button
                         onClick={() => removeShelfLifeOverride(fish.id)}
-                        className="flex h-9 items-center px-2 rounded-lg text-xs font-bold text-[var(--color-critical)] bg-[var(--color-critical)]/10 active:scale-95 transition-transform"
+                        className="flex h-9 items-center px-2 rounded-lg text-xs font-bold text-[#BA1A1A] bg-[#BA1A1A]/10 active:scale-95 transition-transform"
                       >
                         Reset
                       </button>
@@ -789,174 +917,6 @@ function ShelfLifeTab() {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function ExportTab() {
-  const router = useRouter();
-  const entries = useFishStore((s) => s.entries);
-  const exits = useFishStore((s) => s.exits);
-  const getActiveEntries = useFishStore((s) => s.getActiveEntries);
-  const resetAllData = useFishStore((s) => s.resetAllData);
-  const customFish = useFishStore((s) => s.customFish);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [resetting, setResetting] = useState(false);
-
-  function downloadCsv(filename: string, csv: string) {
-    const bom = "\uFEFF";
-    const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function exportActiveStock() {
-    const active = getActiveEntries();
-    const { getFishById } = require("@/lib/fish-data");
-    const rows = active.map((e: typeof active[0]) => {
-      const fish = getFishById(e.fishId, customFish);
-      return [
-        fish?.localName ?? e.fishId,
-        fish?.name ?? "",
-        e.weightKg.toFixed(1),
-        e.grade,
-        new Date(e.enteredAt).toLocaleString("id-ID"),
-        e.enteredBy === "admin_gudang" ? "Admin" : "Pemilik",
-        e.qrCode,
-      ].join(",");
-    });
-    const header = "Nama Lokal,Nama Indonesia,Berat (kg),Grade,Tanggal Masuk,Dicatat Oleh,QR Code";
-    downloadCsv(`stok-aktif-${new Date().toISOString().slice(0, 10)}.csv`, [header, ...rows].join("\n"));
-  }
-
-  function exportHistory() {
-    const { getFishById } = require("@/lib/fish-data");
-    const entryRows = entries.map((e: typeof entries[0]) => {
-      const fish = getFishById(e.fishId, customFish);
-      return [
-        "MASUK",
-        fish?.localName ?? e.fishId,
-        fish?.name ?? "",
-        e.weightKg.toFixed(1),
-        e.grade,
-        new Date(e.enteredAt).toLocaleString("id-ID"),
-        e.enteredBy === "admin_gudang" ? "Admin" : "Pemilik",
-      ].join(",");
-    });
-    const exitRows = exits.map((ex: typeof exits[0]) => {
-      const entry = entries.find((e: typeof entries[0]) => e.id === ex.stockEntryId);
-      const fish = entry ? getFishById(entry.fishId, customFish) : null;
-      return [
-        "KELUAR",
-        fish?.localName ?? ex.stockEntryId,
-        fish?.name ?? "",
-        entry?.weightKg.toFixed(1) ?? "",
-        entry?.grade ?? "",
-        new Date(ex.exitedAt).toLocaleString("id-ID"),
-        ex.exitedBy === "admin_gudang" ? "Admin" : "Pemilik",
-      ].join(",");
-    });
-    const header = "Tipe,Nama Lokal,Nama Indonesia,Berat (kg),Grade,Tanggal,Dicatat Oleh";
-    downloadCsv(`riwayat-${new Date().toISOString().slice(0, 10)}.csv`, [header, ...entryRows, ...exitRows].join("\n"));
-  }
-
-  return (
-    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
-      <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <FileSpreadsheet className="h-6 w-6 text-[var(--color-primary)]" />
-          <div>
-            <p className="font-bold text-[var(--color-foreground)]">Stok Aktif</p>
-            <p className="text-xs text-[var(--color-muted)]">Export semua stok yang ada di cold storage saat ini</p>
-          </div>
-        </div>
-        <button
-          onClick={exportActiveStock}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-        >
-          <Download className="h-5 w-5" />
-          Download CSV Stok Aktif
-        </button>
-      </div>
-
-      <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <FileSpreadsheet className="h-6 w-6 text-[var(--color-warning)]" />
-          <div>
-            <p className="font-bold text-[var(--color-foreground)]">Riwayat Lengkap</p>
-            <p className="text-xs text-[var(--color-muted)]">Export semua data masuk dan keluar</p>
-          </div>
-        </div>
-        <button
-          onClick={exportHistory}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-foreground)] text-sm font-bold text-[var(--color-background)] active:scale-[0.97] transition-transform"
-        >
-          <Download className="h-5 w-5" />
-          Download CSV Riwayat
-        </button>
-      </div>
-
-      <div className="rounded-xl border border-[#BA1A1A]/30 bg-[#BA1A1A]/5 p-5 md:col-span-2">
-        <div className="flex items-center gap-3 mb-3">
-          <AlertTriangle className="h-6 w-6 text-[#BA1A1A]" />
-          <div>
-            <p className="font-bold text-[#BA1A1A]">Reset Semua Data</p>
-            <p className="text-xs text-[var(--color-muted)]">Hapus semua stok, riwayat, pengguna, dan kode undangan dari lokal dan server</p>
-          </div>
-        </div>
-        <button
-          onClick={() => setShowResetConfirm(true)}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#BA1A1A] text-sm font-bold text-white active:scale-[0.97] transition-transform"
-        >
-          <Trash2 className="h-5 w-5" />
-          Reset Semua Data
-        </button>
-      </div>
-
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => !resetting && setShowResetConfirm(false)}
-          />
-          <div className="relative mx-4 mb-6 w-full max-w-[398px] rounded-2xl bg-white p-6 shadow-xl animate-[slideUp_0.3s_ease-out]">
-            <div className="flex flex-col items-center gap-3 pt-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FEE2E2]">
-                <AlertTriangle size={22} className="text-[#BA1A1A]" />
-              </div>
-              <h3 className="text-lg font-bold text-[#1C1B1B]">Reset semua data?</h3>
-              <p className="text-sm text-[#444748] text-center">
-                Semua stok, riwayat, pengguna, dan kode undangan akan dihapus permanen dari perangkat ini dan server. Tindakan ini tidak bisa dibatalkan.
-              </p>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => setShowResetConfirm(false)}
-                disabled={resetting}
-                className="flex-1 rounded-xl bg-[#BA1A1A] py-3 text-sm font-bold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
-              >
-                Batal
-              </button>
-              <button
-                onClick={async () => {
-                  setResetting(true);
-                  await resetAllData();
-                  setShowResetConfirm(false);
-                  router.replace("/");
-                }}
-                disabled={resetting}
-                className="flex-1 rounded-xl border border-[#E5E2E1] bg-white py-3 text-sm font-bold text-[#1C1B1B] active:scale-[0.97] transition-transform disabled:opacity-50"
-              >
-                {resetting ? "Menghapus..." : "Ya, Reset"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -987,33 +947,36 @@ function FishForm({
   onCancel: () => void;
 }) {
   return (
-    <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-primary)] p-4">
+    <div
+      className="rounded-lg bg-white border border-[#0E0F0F] p-4"
+      style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
+    >
       <div className="flex flex-col gap-3">
         <div>
-          <label className="mb-1 block text-xs font-bold text-[var(--color-muted)]">Nama Lokal</label>
+          <label className="mb-1 block text-xs font-bold text-[#444748]">Nama Lokal</label>
           <input
             type="text"
             value={localName}
             onChange={(e) => onLocalNameChange(e.target.value)}
             placeholder="cth. Pari"
-            className="h-12 w-full rounded-xl border border-gray-300 bg-[var(--color-background)] px-4 text-base text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
             autoFocus
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-bold text-[var(--color-muted)]">Nama Indonesia</label>
+          <label className="mb-1 block text-xs font-bold text-[#444748]">Nama Indonesia</label>
           <input
             type="text"
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="cth. Ikan Pari"
-            className="h-12 w-full rounded-xl border border-gray-300 bg-[var(--color-background)] px-4 text-base text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            className="h-12 w-full rounded-lg border border-[#E5E2E1] bg-[#FDF8F8] px-4 text-base text-[#0E0F0F] placeholder:text-[#747878] focus:outline-none focus:ring-2 focus:ring-[#0E0F0F]"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-bold text-[var(--color-muted)]">Kategori</label>
+          <label className="mb-1 block text-xs font-bold text-[#444748]">Kategori</label>
           <Select value={category} onValueChange={onCategoryChange}>
-            <SelectTrigger className="h-12 rounded-xl">
+            <SelectTrigger className="h-12 rounded-lg">
               <SelectValue placeholder="Pilih Kategori" />
             </SelectTrigger>
             <SelectContent>
@@ -1024,20 +987,20 @@ function FishForm({
           </Select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-bold text-[var(--color-muted)]">Shelf Life (jam)</label>
+          <label className="mb-1 block text-xs font-bold text-[#444748]">Shelf Life (jam)</label>
           <div className="flex items-center gap-3">
             <button
               onClick={() => onShelfLifeChange(Math.max(1, shelfLife - 1))}
-              className="flex h-12 w-14 items-center justify-center rounded-xl bg-[var(--color-background)] border border-[var(--color-border)] text-lg font-bold text-[var(--color-foreground)] active:scale-95 transition-transform"
+              className="flex h-12 w-14 items-center justify-center rounded-lg bg-[#FDF8F8] border border-[#E5E2E1] text-lg font-bold text-[#0E0F0F] active:scale-95 transition-transform"
             >
               -
             </button>
-            <span className="min-w-[48px] text-center text-lg font-extrabold text-[var(--color-foreground)]">
+            <span className="min-w-[48px] text-center text-lg font-extrabold text-[#0E0F0F]">
               {shelfLife}
             </span>
             <button
               onClick={() => onShelfLifeChange(shelfLife + 1)}
-              className="flex h-12 w-14 items-center justify-center rounded-xl bg-[var(--color-background)] border border-[var(--color-border)] text-lg font-bold text-[var(--color-foreground)] active:scale-95 transition-transform"
+              className="flex h-12 w-14 items-center justify-center rounded-lg bg-[#FDF8F8] border border-[#E5E2E1] text-lg font-bold text-[#0E0F0F] active:scale-95 transition-transform"
             >
               +
             </button>
@@ -1046,14 +1009,14 @@ function FishForm({
         <div className="flex gap-2">
           <button
             onClick={onSave}
-            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-sm font-bold text-[var(--color-on-primary)] active:scale-[0.97] transition-transform"
+            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0E0F0F] text-sm font-bold text-white active:scale-[0.97] transition-transform"
           >
             <Check className="h-4 w-4" />
             Simpan
           </button>
           <button
             onClick={onCancel}
-            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-sm font-bold text-[var(--color-muted)] active:scale-[0.97] transition-transform"
+            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-white border border-[#E5E2E1] text-sm font-bold text-[#444748] active:scale-[0.97] transition-transform"
           >
             <X className="h-4 w-4" />
             Batal
