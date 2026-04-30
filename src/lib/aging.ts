@@ -1,5 +1,5 @@
-import { getFishById } from "./fish-data";
-import { StockEntry } from "./types";
+import { getFishById, getAllFish } from "./fish-data";
+import { StockEntry, FishType } from "./types";
 
 export type FreshnessStatus = "fresh" | "warning" | "critical";
 
@@ -12,8 +12,8 @@ export interface AgingInfo {
   label: string;
 }
 
-export function calculateAging(entry: StockEntry, shelfLifeOverride?: number): AgingInfo {
-  const fish = getFishById(entry.fishId);
+export function calculateAging(entry: StockEntry, shelfLifeOverride?: number, customFish?: FishType[]): AgingInfo {
+  const fish = customFish ? getAllFish(customFish).find((f) => f.id === entry.fishId) : getFishById(entry.fishId);
   const shelfLife = shelfLifeOverride ?? fish?.defaultShelfLifeHours ?? 24;
 
   const now = Date.now();

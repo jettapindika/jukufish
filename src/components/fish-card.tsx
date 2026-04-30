@@ -2,7 +2,7 @@
 
 import type { StockEntry } from "@/lib/types";
 import { calculateAging, formatElapsed } from "@/lib/aging";
-import { getFishById } from "@/lib/fish-data";
+import { useFishData } from "@/hooks/use-fish-data";
 import { FreshnessBar } from "./freshness-bar";
 
 interface FishCardProps {
@@ -16,6 +16,7 @@ const BORDER_COLOR: Record<string, string> = {
 };
 
 export function FishCard({ entry }: FishCardProps) {
+  const { getFishById } = useFishData();
   const fish = getFishById(entry.fishId);
   const aging = calculateAging(entry);
 

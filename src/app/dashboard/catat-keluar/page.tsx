@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useFishStore } from "@/lib/store";
 import { calculateAging, formatElapsed } from "@/lib/aging";
-import { getFishById } from "@/lib/fish-data";
+import { useFishData } from "@/hooks/use-fish-data";
 import { StockEntry } from "@/lib/types";
 import Link from "next/link";
 import { Package, Clock, ArrowDown, X, PlusCircle } from "lucide-react";
@@ -29,6 +29,7 @@ export default function CatatKeluarPage() {
   const getActiveEntries = useFishStore((s) => s.getActiveEntries);
   const addExit = useFishStore((s) => s.addExit);
   const currentRole = useFishStore((s) => s.currentRole);
+  const { getFishById } = useFishData();
 
   useEffect(() => {
     if (currentRole === "pemilik") {

@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft, RotateCcw, Plus, Minus } from "lucide-react";
-import { FISH_DATA, FISH_CATEGORIES } from "@/lib/fish-data";
 import { useFishStore } from "@/lib/store";
+import { useFishData } from "@/hooks/use-fish-data";
 import type { FishCategory } from "@/lib/types";
 
 export default function PengaturanPage() {
@@ -12,8 +12,9 @@ export default function PengaturanPage() {
   const setShelfLifeOverride = useFishStore((s) => s.setShelfLifeOverride);
   const removeShelfLifeOverride = useFishStore((s) => s.removeShelfLifeOverride);
   const getShelfLifeHours = useFishStore((s) => s.getShelfLifeHours);
+  const { categories: categoryMap, getFishByCategory } = useFishData();
 
-  const categories = Object.entries(FISH_CATEGORIES) as [FishCategory, string][];
+  const categories = Object.entries(categoryMap) as [FishCategory, string][];
 
   return (
     <div className="flex flex-col px-4 md:px-0 pt-4 pb-8 md:max-w-[700px]">
@@ -31,7 +32,7 @@ export default function PengaturanPage() {
 
       <div className="flex flex-col gap-6">
         {categories.map(([catKey, catLabel]) => {
-          const fishInCat = FISH_DATA.filter((f) => f.category === catKey);
+          const fishInCat = getFishByCategory(catKey);
           if (fishInCat.length === 0) return null;
 
           return (

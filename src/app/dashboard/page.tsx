@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, Plus, ArrowRight } from "lucide-react";
 import { useFishStore } from "@/lib/store";
 import { calculateAging, formatElapsed } from "@/lib/aging";
-import { getFishById } from "@/lib/fish-data";
+import { useFishData } from "@/hooks/use-fish-data";
 import type { StockEntry } from "@/lib/types";
 
 export default function DashboardHome() {
@@ -14,6 +14,7 @@ export default function DashboardHome() {
   const getActiveEntries = useFishStore((s) => s.getActiveEntries);
   const getMarkedEntries = useFishStore((s) => s.getMarkedEntries);
   const entries = useFishStore((s) => s.entries);
+  const { getFishById } = useFishData();
 
   useEffect(() => {
     import("@/lib/supabase").then(({ supabase }) => {
@@ -64,11 +65,11 @@ export default function DashboardHome() {
   const userName = currentUser?.name?.split(" ")[0] ?? "User";
 
   if (currentRole === "admin_gudang") {
-    return <AdminDashboard stats={stats} markedCount={markedCount} userName={userName} activeEntries={activeEntries} />;
+    return <AdminDashboard stats={stats} markedCount={markedCount} userName={userName} activeEntries={activeEntries} getFishById={getFishById} />;
   }
 
   return (
-    <OwnerDashboard stats={stats} activeEntries={activeEntries} userName={userName} />
+    <OwnerDashboard stats={stats} activeEntries={activeEntries} userName={userName} getFishById={getFishById} />
   );
 }
 
@@ -89,7 +90,7 @@ function getTimeGreeting() {
   return "Malam";
 }
 
-function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats: Stats; markedCount: number; userName: string; activeEntries: StockEntry[] }) {
+function AdminDashboard({ stats, markedCount, userName, activeEntries, getFishById }: { stats: Stats; markedCount: number; userName: string; activeEntries: StockEntry[]; getFishById: (id: string) => { localName: string; name: string; category: string } | undefined }) {
   const recentEntries = useMemo(() => {
     return [...activeEntries]
       .sort((a, b) => new Date(b.enteredAt).getTime() - new Date(a.enteredAt).getTime())
@@ -223,7 +224,7 @@ function ActivityItem({ name, detail, weight, iconType }: { name: string; detail
   );
 }
 
-function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; activeEntries: StockEntry[]; userName: string }) {
+function OwnerDashboard({ stats, activeEntries, userName, getFishById }: { stats: Stats; activeEntries: StockEntry[]; userName: string; getFishById: (id: string) => { localName: string; name: string; category: string } | undefined }) {
   const [activeFilter, setActiveFilter] = useState<"all" | "fresh" | "warning" | "critical">("all");
   const markForExit = useFishStore((s) => s.markForExit);
   const unmarkForExit = useFishStore((s) => s.unmarkForExit);

@@ -6,7 +6,7 @@ import { ArrowLeft, RefreshCw, LogOut, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { QrScanner } from "@/components/qr-scanner";
 import { useFishStore } from "@/lib/store";
-import { getFishById } from "@/lib/fish-data";
+import { useFishData } from "@/hooks/use-fish-data";
 import { calculateAging } from "@/lib/aging";
 import type { StockEntry } from "@/lib/types";
 
@@ -16,6 +16,7 @@ export default function ScanQrPage() {
   const [scannedEntry, setScannedEntry] = useState<StockEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exitSuccess, setExitSuccess] = useState(false);
+  const { getFishById } = useFishData();
 
   const [scanLoading, setScanLoading] = useState(false);
 
