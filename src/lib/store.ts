@@ -21,6 +21,7 @@ interface FishStore {
   syncState: SyncState;
   lastSyncAt: string | null;
   lastClearedAt: string | null;
+  clearInProgress: boolean;
   syncToast: SyncToast | null;
   darkMode: boolean;
   shelfLifeOverrides: ShelfLifeOverride[];
@@ -101,6 +102,7 @@ export const useFishStore = create<FishStore>()(
       syncState: "idle" as SyncState,
       lastSyncAt: null,
       lastClearedAt: null,
+      clearInProgress: false,
       syncToast: null,
       darkMode: false,
       shelfLifeOverrides: [],
@@ -305,17 +307,17 @@ export const useFishStore = create<FishStore>()(
 
       clearHistory: async () => {
         const now = new Date().toISOString();
-        set({ entries: [], exits: [], syncQueue: [], lastClearedAt: now });
+        set({ clearInProgress: true, entries: [], exits: [], syncQueue: [], lastClearedAt: now });
 
         try {
           const { supabase } = await import("./supabase");
-          const { data: exits } = await supabase.from("stock_exits").select("id");
-          for (const r of (exits ?? [])) await supabase.from("stock_exits").delete().eq("id", r.id);
-          const { data: entries } = await supabase.from("stock_entries").select("id");
-          for (const r of (entries ?? [])) await supabase.from("stock_entries").delete().eq("id", r.id);
+          await supabase.from("stock_exits").delete().neq("id", "");
+          await supabase.from("stock_entries").delete().neq("id", "");
         } catch {
-          // offline — remote delete will be skipped, lastClearedAt prevents re-pull
+          // offline — will be cleaned up on next sync via lastClearedAt
         }
+
+        set({ clearInProgress: false });
       },
 
       resetAllData: async () => {
@@ -332,6 +334,7 @@ export const useFishStore = create<FishStore>()(
           syncState: "idle",
           lastSyncAt: null,
           lastClearedAt: now,
+          clearInProgress: true,
           syncToast: null,
           shelfLifeOverrides: [],
           customCategories: [],
@@ -340,23 +343,21 @@ export const useFishStore = create<FishStore>()(
 
         try {
           const { supabase } = await import("./supabase");
-          const { data: exits } = await supabase.from("stock_exits").select("id");
-          for (const r of (exits ?? [])) await supabase.from("stock_exits").delete().eq("id", r.id);
-          const { data: entries } = await supabase.from("stock_entries").select("id");
-          for (const r of (entries ?? [])) await supabase.from("stock_entries").delete().eq("id", r.id);
-          const { data: invites } = await supabase.from("invite_codes").select("code");
-          for (const r of (invites ?? [])) await supabase.from("invite_codes").delete().eq("code", r.code);
-          const { data: users } = await supabase.from("users").select("id");
-          for (const r of (users ?? [])) await supabase.from("users").delete().eq("id", r.id);
+          await supabase.from("stock_exits").delete().neq("id", "");
+          await supabase.from("stock_entries").delete().neq("id", "");
+          await supabase.from("invite_codes").delete().neq("code", "");
+          await supabase.from("users").delete().neq("id", "");
         } catch {
-          // offline
+          // offline — will be cleaned up on next sync via lastClearedAt
         }
+
+        set({ clearInProgress: false });
 
         try {
           const localforage = (await import("localforage")).default;
           await localforage.removeItem("juku-fish-storage");
         } catch {
-          // fallback
+          // ignore
         }
       },
 
@@ -384,8 +385,10 @@ export const useFishStore = create<FishStore>()(
       mergeRemoteEntries: (newEntries) => {
         if (newEntries.length === 0) return;
         set((state) => {
+          if (state.clearInProgress) return {};
           const existingIds = new Set(state.entries.map((e) => e.id));
           const toAdd = newEntries.filter((e) => !existingIds.has(e.id));
+          if (toAdd.length === 0) return {};
           return { entries: [...state.entries, ...toAdd] };
         });
       },
@@ -393,8 +396,10 @@ export const useFishStore = create<FishStore>()(
       mergeRemoteExits: (newExits) => {
         if (newExits.length === 0) return;
         set((state) => {
+          if (state.clearInProgress) return {};
           const existingIds = new Set(state.exits.map((e) => e.id));
           const toAdd = newExits.filter((e) => !existingIds.has(e.id));
+          if (toAdd.length === 0) return {};
           return { exits: [...state.exits, ...toAdd] };
         });
       },
