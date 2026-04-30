@@ -151,7 +151,7 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="#1C1B1B"/>
-          </svg>
+          </svg>``
         </Link>
       </div>
 
@@ -235,160 +235,168 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
   }, [activeEntries, activeFilter]);
 
   return (
-    <div className="p-4 md:px-0 min-h-full">
-      <div className="space-y-4 md:space-y-6">
-        {stats.critical > 0 && <AlertCard />}
-        <StatGrid stats={stats} />
-        <FilterChips activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
-
-        <div>
-          <h2 className="text-xl font-bold text-[#1C1B1B] mt-2 mb-3">
-            Ringkasan Stok
-          </h2>
-          <div className="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-3">
-            {filteredEntries.length > 0 ? (
-              filteredEntries.map((entry) => {
-                const fish = getFishById(entry.fishId);
-                const aging = calculateAging(entry);
-                return (
-                  <NewStockCard
-                    key={entry.id}
-                    name={fish?.localName ?? entry.fishId}
-                    batchInfo={`Batch: ${entry.qrCode ?? "#000"} • Rak 3`}
-                    status={aging.status as 'fresh' | 'warning' | 'critical'}
-                    timeRemaining={formatElapsed(aging.remainingHours)}
-                    freshnessPercent={100 - aging.percentage}
-                    weightKg={entry.weightKg}
-                    enteredAt={entry.enteredAt}
-                    enteredByName={entry.enteredByName}
-                    isMarked={entry.markedForExit}
-                    onToggleMark={() => {
-                      if (entry.markedForExit) {
-                        unmarkForExit(entry.id);
-                      } else if (currentRole) {
-                        markForExit(entry.id, currentRole);
-                      }
-                    }}
-                  />
-                );
-              })
-            ) : (
-              <p className="py-10 text-center text-sm text-gray-500">Tidak ada stok untuk filter ini.</p>
-            )}
+    <div className="flex flex-col gap-2 px-4 md:px-0 min-h-full">
+      {stats.critical > 0 && (
+        <div className="w-full bg-[#BA1A1A] rounded-[8px] flex items-center p-4 gap-[21px] shadow-[0px_1px_1px_rgba(0,0,0,0.05),0px_4px_4px_rgba(0,0,0,0.05),0px_10px_10px_rgba(0,0,0,0.03)]">
+          <svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+            <path d="M11 0L0.5 19H21.5L11 0ZM10 16V14H12V16H10ZM10 12V8H12V12H10Z" fill="white"/>
+          </svg>
+          <div className="flex flex-col gap-1">
+            <p className="font-bold text-[14px] text-white leading-[16.8px] tracking-[0.28px]">
+              Peringatan! Ada stok kritis.
+            </p>
+            <p className="text-[12px] text-white leading-[14.4px]">
+              Ada stok kritis, segera ambil tindakan secepatnya!
+            </p>
           </div>
         </div>
+      )}
+
+      <div className="pt-2">
+        <div className="grid grid-cols-2 gap-2 w-full">
+          <div className="bg-white border border-[#E5E2E1] p-[17px] flex flex-col gap-1 shadow-[0px_1px_1px_rgba(0,0,0,0.05),0px_4px_4px_rgba(0,0,0,0.05),0px_10px_10px_rgba(0,0,0,0.03)]">
+            <p className="text-[12px] leading-[14.4px] text-[#5D5F5F]">Total Stok</p>
+            <p className="text-[32px] font-bold leading-[38.4px] tracking-[-0.64px] text-[#1C1B1B]">{stats.total}</p>
+          </div>
+          <div className="bg-white border border-[#E5E2E1] p-[17px] flex flex-col gap-1 shadow-[0px_1px_1px_rgba(0,0,0,0.05),0px_4px_4px_rgba(0,0,0,0.05),0px_10px_10px_rgba(0,0,0,0.03)]">
+            <p className="text-[12px] leading-[14.4px] text-[#10B981]">Segar</p>
+            <p className="text-[32px] font-bold leading-[38.4px] tracking-[-0.64px] text-[#10B981]">{stats.fresh}</p>
+          </div>
+          <div className="bg-white border border-[#E5E2E1] p-[17px] flex flex-col gap-1 shadow-[0px_1px_1px_rgba(0,0,0,0.05),0px_4px_4px_rgba(0,0,0,0.05),0px_10px_10px_rgba(0,0,0,0.03)]">
+            <p className="text-[12px] leading-[14.4px] text-[#F59E0B]">Perhatian</p>
+            <p className="text-[32px] font-bold leading-[38.4px] tracking-[-0.64px] text-[#F59E0B]">{stats.warning}</p>
+          </div>
+          <div className="bg-white border border-[#E5E2E1] p-[17px] flex flex-col gap-1 shadow-[0px_1px_1px_rgba(0,0,0,0.05),0px_4px_4px_rgba(0,0,0,0.05),0px_10px_10px_rgba(0,0,0,0.03)]">
+            <p className="text-[12px] leading-[14.4px] text-[#BA1A1A]">Kritis</p>
+            <p className="text-[32px] font-bold leading-[38.4px] tracking-[-0.64px] text-[#BA1A1A]">{stats.critical}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-2">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar py-2">
+          {[
+            { label: "Semua", value: "all" as const },
+            { label: "Segar", value: "fresh" as const },
+            { label: "Perhatian", value: "warning" as const },
+            { label: "Kritis", value: "critical" as const },
+          ].map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setActiveFilter(filter.value)}
+              className={`shrink-0 rounded-[12px] px-4 py-[9px] text-[14px] font-bold tracking-[0.28px] transition-colors ${
+                activeFilter === filter.value
+                  ? "bg-[#0E0F0F] text-white shadow-[0px_2px_2px_rgba(0,0,0,0.1),0px_8px_8px_rgba(0,0,0,0.08)]"
+                  : "bg-white text-[#0E0F0F] border border-[#E5E2E1] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]"
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 pb-1">
+        <h2 className="text-[20px] font-bold text-[#1C1B1B] leading-[26px]">
+          Ringkasan Stok
+        </h2>
+      </div>
+
+      <div className="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-3">
+        {filteredEntries.length > 0 ? (
+          filteredEntries.map((entry) => {
+            const fish = getFishById(entry.fishId);
+            const aging = calculateAging(entry);
+            return (
+              <OwnerStockCard
+                key={entry.id}
+                name={fish?.localName ?? entry.fishId}
+                qrCode={entry.qrCode ?? "-"}
+                adminName={entry.enteredByName || (entry.enteredBy === "admin_gudang" ? "Admin" : "Pemilik")}
+                status={aging.status as 'fresh' | 'warning' | 'critical'}
+                timeRemaining={formatElapsed(aging.remainingHours)}
+                freshnessPercent={100 - aging.percentage}
+                weightKg={entry.weightKg}
+                enteredAt={entry.enteredAt}
+                isMarked={entry.markedForExit}
+                onToggleMark={() => {
+                  if (entry.markedForExit) {
+                    unmarkForExit(entry.id);
+                  } else if (currentRole) {
+                    markForExit(entry.id, currentRole);
+                  }
+                }}
+              />
+            );
+          })
+        ) : (
+          <p className="py-10 text-center text-sm text-gray-500">Tidak ada stok untuk filter ini.</p>
+        )}
       </div>
     </div>
   );
 }
 
-const StatGrid = ({ stats }: { stats: Stats }) => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full">
-    <StatCard label="Total Stok" value={String(stats.total)} borderColor="#242424" labelColor="#444748" valueColor="#1C1B1B" />
-    <StatCard label="Segar" value={String(stats.fresh)} borderColor="#10B981" labelColor="#10B981" valueColor="#10B981" />
-    <StatCard label="Perhatian" value={String(stats.warning)} borderColor="#F59E0B" labelColor="#F59E0B" valueColor="#F59E0B" />
-    <StatCard label="Kritis" value={String(stats.critical)} borderColor="#BA1A1A" labelColor="#BA1A1A" valueColor="#BA1A1A" />
-  </div>
-);
-
-const FilterChips = ({ activeFilter, setActiveFilter }: { activeFilter: string; setActiveFilter: (filter: "all" | "fresh" | "warning" | "critical") => void; }) => {
-  const statusFilters = [
-    { label: "Semua", value: "all" as const },
-    { label: "Segar", value: "fresh" as const },
-    { label: "Perhatian", value: "warning" as const },
-    { label: "Kritis", value: "critical" as const },
-  ];
-
-  return (
-    <div className="flex gap-2 overflow-x-auto hide-scrollbar py-3">
-      {statusFilters.map((filter) => (
-        <button
-          key={filter.value}
-          onClick={() => setActiveFilter(filter.value)}
-          className={`shrink-0 rounded-xl text-sm font-bold transition-colors ${activeFilter === filter.value ? "bg-[#0E0F0F] text-white px-4 py-[8.5px]" : "bg-white text-[#1C1B1B] border border-[#E5E2E1] px-[17px] py-[9px]"}`}>
-          {filter.label}
-        </button>
-      ))}
-    </div>
-  );
-};
-
-const StatCard = ({ label, value, borderColor, labelColor, valueColor }: { label: string; value: string; borderColor: string; labelColor?: string; valueColor?: string }) => (
-  <div
-    className="h-[90px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] pl-5 pt-4"
-    style={{ borderLeft: `3px solid ${borderColor}` }}
-  >
-    <p className="text-xs font-normal" style={{ color: labelColor ?? "#444748" }}>{label}</p>
-    <p className="text-[32px] font-bold leading-none mt-[3px]" style={{ color: valueColor ?? "#1C1B1B" }}>{value}</p>
-  </div>
-);
-
-const AlertCard = () => (
-  <div className="w-full h-[82px] bg-[#BA1A1A] rounded-lg flex items-center px-6 gap-5">
-    <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M11 0L0 19.5H22L11 0ZM10 16.5V14H12V16.5H10ZM10 12V7H12V12H10Z" fill="white"/>
-    </svg>
-    <div>
-      <p className="font-bold text-sm text-white">Peringatan! Ada stok kritis.</p>
-      <p className="text-xs text-white">Ada stok kritis, segera ambil tindakan secepatnya!</p>
-    </div>
-  </div>
-);
-
-const NewStockCard = ({ name, batchInfo, status, timeRemaining, freshnessPercent, weightKg, enteredAt, enteredByName, isMarked, onToggleMark }: {
+function OwnerStockCard({ name, qrCode, adminName, status, timeRemaining, freshnessPercent, weightKg, enteredAt, isMarked, onToggleMark }: {
   name: string;
-  batchInfo: string;
+  qrCode: string;
+  adminName: string;
   status: 'fresh' | 'warning' | 'critical';
   timeRemaining: string;
   freshnessPercent: number;
   weightKg: number;
   enteredAt?: string;
-  enteredByName?: string;
   isMarked?: boolean;
   onToggleMark?: () => void;
-}) => {
+}) {
   const [expanded, setExpanded] = useState(false);
   const statusConfig = {
     fresh: { dot: '#10B981', bar: '#10B981', badgeBg: '#10B981', label: 'SEGAR' },
     warning: { dot: '#F59E0B', bar: '#F59E0B', badgeBg: '#F59E0B', label: 'PERHATIAN' },
-    critical: { dot: '#EF4444', bar: '#EF4444', badgeBg: '#BA1A1A', label: 'KRITIS' },
+    critical: { dot: '#BA1A1A', bar: '#BA1A1A', badgeBg: '#BA1A1A', label: 'KRITIS' },
   };
   const config = statusConfig[status];
 
-  const formattedDate = enteredAt
+  const formattedDateLong = enteredAt
     ? new Date(enteredAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
     : "-";
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] p-4 flex flex-col gap-3">
+    <div className="w-full bg-white p-4 flex flex-col gap-3 shadow-[0px_1px_1px_rgba(0,0,0,0.05),0px_4px_4px_rgba(0,0,0,0.05),0px_10px_10px_rgba(0,0,0,0.03)]">
       <div className="flex justify-between items-start">
-        <div className="flex items-start gap-2">
-          <div className="w-3 h-3 rounded-full mt-[7px] shrink-0" style={{ backgroundColor: config.dot }} />
-          <div>
-            <h3 className="text-lg font-bold text-[#1C1B1B] leading-tight">{name}</h3>
-            <p className="text-xs text-[#444748] mt-[2px]">{batchInfo}</p>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: config.dot }} />
+            <h3 className="text-[20px] font-bold text-[#1C1B1B] leading-[26px]">{name}</h3>
           </div>
+          <p className="text-[12px] text-[#5D5F5F] leading-[14.4px]">ID: {qrCode} &middot; {adminName}</p>
         </div>
-        <div className="shrink-0 rounded px-2 py-1 text-xs font-bold text-white" style={{ backgroundColor: config.badgeBg }}>
+        <span
+          className="shrink-0 px-2 py-[3.5px] text-[12px] font-bold text-white uppercase tracking-[0.6px]"
+          style={{ backgroundColor: config.badgeBg }}
+        >
           {config.label}
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-between items-center">
+          <span className="text-[12px] text-[#1C1B1B] leading-[14.4px]">Sisa Waktu Segar</span>
+          <span className="text-[12px] font-bold text-right leading-[14.4px]" style={{ color: config.bar }}>{timeRemaining}</span>
+        </div>
+        <div className="w-full bg-[#E5E2E1] rounded-[12px] h-2 overflow-hidden">
+          <div
+            className={`h-full rounded-[12px] transition-all ${status === "critical" ? "freshness-critical" : ""}`}
+            style={{ width: `${Math.max(freshnessPercent, 2)}%`, backgroundColor: config.bar }}
+          />
         </div>
       </div>
 
-      <div>
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-[#444748]">Sisa Waktu Segar</span>
-          <span className="font-medium" style={{ color: config.bar }}>{timeRemaining}</span>
-        </div>
-        <div className="w-full bg-[#E5E2E1] rounded-full h-2">
-          <div className="h-2 rounded-full transition-all" style={{ width: `${Math.max(freshnessPercent, 2)}%`, backgroundColor: config.bar }} />
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center">
-        <span className="text-xl font-bold text-[#1C1B1B]">{weightKg} KG</span>
+      <div className="flex justify-between items-end pt-1">
+        <span className="text-[18px] font-bold text-[#1C1B1B] leading-[27px]">{weightKg} KG</span>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="bg-[#0E0F0F] text-white text-sm font-bold py-2 px-4 rounded-lg active:scale-95 transition-transform"
+          className="bg-[#0E0F0F] text-white text-[14px] font-bold py-2 px-4 tracking-[0.28px] active:scale-95 transition-transform shadow-[0px_2px_2px_rgba(0,0,0,0.1)]"
         >
           {expanded ? "Lebih Sedikit" : "Lebih Banyak"}
         </button>
@@ -399,15 +407,15 @@ const NewStockCard = ({ name, batchInfo, status, timeRemaining, freshnessPercent
         style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
       >
         <div className="overflow-hidden">
-          <div className="flex flex-col gap-3 pt-3 border-t border-[#E5E2E1] mt-1">
+          <div className="flex flex-col gap-3 pt-3 border-t border-[#E5E2E1]">
             <div className="flex flex-col gap-[2px]">
               <div>
                 <p className="text-base font-bold text-[#1C1B1B]">Tanggal Masuk:</p>
-                <p className="text-xs text-[#444748]">{formattedDate}</p>
+                <p className="text-[12px] text-[#5D5F5F]">{formattedDateLong}</p>
               </div>
               <div className="mt-1">
                 <p className="text-base font-bold text-[#1C1B1B]">Admin</p>
-                <p className="text-xs text-[#444748]">{enteredByName ?? "-"}</p>
+                <p className="text-[12px] text-[#5D5F5F]">{adminName}</p>
               </div>
             </div>
             <button
@@ -422,4 +430,4 @@ const NewStockCard = ({ name, batchInfo, status, timeRemaining, freshnessPercent
       </div>
     </div>
   );
-};
+}

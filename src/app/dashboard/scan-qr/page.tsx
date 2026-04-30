@@ -6,8 +6,8 @@ import { ArrowLeft, RefreshCw, LogOut, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { QrScanner } from "@/components/qr-scanner";
 import { useFishStore } from "@/lib/store";
-import { getFishById, FISH_CATEGORIES } from "@/lib/fish-data";
-import { calculateAging, formatElapsed } from "@/lib/aging";
+import { getFishById } from "@/lib/fish-data";
+import { calculateAging } from "@/lib/aging";
 import type { StockEntry } from "@/lib/types";
 
 export default function ScanQrPage() {
@@ -155,137 +155,146 @@ export default function ScanQrPage() {
 
   const fish = getFishById(scannedEntry.fishId);
   const aging = calculateAging(scannedEntry);
-  const categoryLabel =
-    fish?.category && fish.category in FISH_CATEGORIES
-      ? FISH_CATEGORIES[fish.category as keyof typeof FISH_CATEGORIES]
-      : "Tidak diketahui";
-  const roleLabel = scannedEntry.enteredBy === "admin_gudang" ? "Admin Gudang" : "Pemilik";
-  const roleName = scannedEntry.enteredByName
-    ? `${scannedEntry.enteredByName} (${roleLabel})`
-    : roleLabel;
   const entryDate = new Date(scannedEntry.enteredAt);
-  const formattedDate = entryDate.toLocaleDateString("id-ID", {
-    weekday: "long",
+  const formattedDate = entryDate.toLocaleDateString("en-GB", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
-  const formattedTime = entryDate.toLocaleTimeString("id-ID", {
+  const formattedTime = entryDate.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
   });
 
+  const freshnessPercent = Math.max(100 - aging.percentage, 0);
+  const elapsedDays = Math.max(1, Math.ceil(aging.elapsedHours / 24));
+  const totalDays = Math.ceil((aging.elapsedHours + aging.remainingHours) / 24);
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] px-4 md:px-0 pt-4 pb-20 md:max-w-2xl md:mx-auto md:w-full">
-      <div className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-sm border border-[var(--color-border)]">
-        <h2 className="text-2xl font-bold text-[var(--color-foreground)]">
-          {fish?.localName ?? scannedEntry.fishId}
-        </h2>
-        <p className="text-sm text-[var(--color-muted)] mt-1">
-          {scannedEntry.qrCode}
-        </p>
-        
-        <div className="mt-8 mb-6">
-          <p className="text-5xl font-extrabold text-[var(--color-foreground)] tracking-tight">
-            {scannedEntry.weightKg.toFixed(1)} <span className="text-2xl font-bold text-[var(--color-muted)]">kg</span>
-          </p>
-        </div>
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] px-4 md:px-0 pt-4 pb-24 md:max-w-2xl md:mx-auto md:w-full">
+      <div className="flex items-center gap-3 mb-4">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="16" fill="#22C55E" />
+          <path d="M13.5 20.5L9.5 16.5L10.91 15.09L13.5 17.67L21.09 10.09L22.5 11.5L13.5 20.5Z" fill="white" />
+        </svg>
+        <h1 className="text-2xl font-bold text-[var(--color-foreground)]">
+          Scan Berhasil
+        </h1>
+      </div>
 
-        <div className="h-px bg-[var(--color-border)] my-4" />
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-[var(--color-muted)] font-medium uppercase tracking-wide">
-              Tanggal Masuk
+      <div className="rounded-2xl overflow-hidden border border-[var(--color-border)]">
+        <div className="flex items-center gap-4 bg-[#242424] px-4 py-4">
+          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-600 shrink-0">
+            <div className="w-full h-full bg-gradient-to-br from-gray-500 to-gray-700" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-white/60 truncate">
+              ID QR: #{scannedEntry.qrCode}
             </p>
-            <p className="text-sm font-semibold text-[var(--color-foreground)] mt-1">
-              {formattedDate}
-            </p>
-            <p className="text-xs text-[var(--color-muted)]">
-              {formattedTime}
+            <p className="text-lg font-bold text-white truncate">
+              {fish?.localName ?? scannedEntry.fishId}
             </p>
           </div>
-          <div>
-            <p className="text-xs text-[var(--color-muted)] font-medium uppercase tracking-wide">
-              Dicatat Oleh
-            </p>
-            <p className="text-sm font-semibold text-[var(--color-foreground)] mt-1">
-              {roleName}
-            </p>
-            <div className="mt-2 inline-block">
-              <span className="inline-flex items-center justify-center px-3 py-1 rounded-[var(--radius-sm)] bg-[var(--color-primary)] text-white text-sm font-bold">
-                Grade {scannedEntry.grade}
-              </span>
+        </div>
+
+        <div className="bg-[var(--color-surface)] px-4 py-4">
+          <div className="grid grid-cols-2 gap-y-5">
+            <div>
+              <p className="text-xs text-[var(--color-muted)]">Weight</p>
+              <p className="text-xl font-bold text-[var(--color-foreground)] mt-1">
+                {scannedEntry.weightKg.toFixed(1)} kg
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-[var(--color-muted)]">Grade</p>
+              <p className="text-xl font-bold text-[var(--color-foreground)] mt-1">
+                {scannedEntry.grade.repeat(3 - scannedEntry.grade.length + 1)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-[var(--color-muted)]">Date Received</p>
+              <p className="text-xl font-bold text-[var(--color-foreground)] mt-1">
+                {formattedDate}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-[var(--color-muted)]">Time</p>
+              <p className="text-xl font-bold text-[var(--color-foreground)] mt-1">
+                {formattedTime}
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="h-px bg-[var(--color-border)] my-4" />
-
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-[var(--color-muted)] font-medium uppercase tracking-wide">
-              Kesegaran
-            </p>
+      <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-base font-bold text-[var(--color-foreground)]">
+            Status Kesegaran
+          </p>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+            style={{
+              color: aging.color,
+              backgroundColor: `${aging.color}1A`,
+            }}
+          >
             <span
-              className="text-xs font-bold px-3 py-1 rounded-full"
-              style={{
-                color: aging.color,
-                backgroundColor: `${aging.color}1A`,
-              }}
-            >
-              {aging.label}
-            </span>
-          </div>
-          <div className="h-3 rounded-full bg-[var(--color-border)] overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${Math.max(100 - aging.percentage, 0)}%`,
-                backgroundColor: aging.color,
-              }}
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: aging.color }}
             />
-          </div>
-          <div className="flex justify-between mt-2">
-            <p className="text-xs font-medium text-[var(--color-muted)]">
-              Berlalu: {formatElapsed(aging.elapsedHours)}
-            </p>
-            <p className="text-xs font-medium text-[var(--color-muted)]">
-              Sisa: {formatElapsed(aging.remainingHours)}
-            </p>
-          </div>
+            {aging.label}
+          </span>
+        </div>
+        <div className="h-3 rounded-full bg-[var(--color-border)] overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${freshnessPercent}%`,
+              backgroundColor: aging.color,
+            }}
+          />
+        </div>
+        <div className="flex justify-between mt-3">
+          <p className="text-xs text-[var(--color-muted)]">
+            Hari ke-{elapsedDays}
+          </p>
+          <p className="text-xs text-[var(--color-muted)]">
+            Est. {totalDays} Hari
+          </p>
         </div>
       </div>
 
       <div className="mt-auto pt-6 space-y-3">
         {exitSuccess ? (
-          <div className="flex items-center justify-center gap-2 h-14 rounded-2xl bg-[var(--color-fresh)] text-white font-bold">
-            <Check className="w-5 h-5" />
+          <div className="flex items-center justify-center gap-2 h-14 rounded-xl bg-[var(--color-fresh)] text-white font-bold text-sm tracking-wide uppercase">
+            <Check className="w-[18px] h-[18px]" />
             Stok berhasil dikeluarkan!
           </div>
         ) : (
           <button
             onClick={handleExitStock}
-            className="w-full h-14 flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-critical)] text-white font-bold text-base active:scale-[0.98] transition-transform"
+            className="w-full h-14 flex items-center justify-center gap-2 rounded-xl bg-[#BA1A1A] text-white font-bold text-sm tracking-wide uppercase active:scale-[0.98] transition-transform"
           >
-            <LogOut className="w-5 h-5" />
-            Keluarkan Stok Ini
+            <LogOut className="w-[18px] h-[18px]" />
+            KELUARKAN STOK INI
           </button>
         )}
         <div className="flex gap-3">
           <button
             onClick={resetScan}
-            className="flex-1 h-12 flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] font-semibold text-sm active:scale-[0.98] transition-transform"
+            className="flex-1 h-14 flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] font-bold text-sm tracking-wide uppercase active:scale-[0.98] transition-transform"
           >
-            <RefreshCw className="w-5 h-5" />
-            Scan Lagi
+            <RefreshCw className="w-6 h-6" />
+            SCAN ULANG
           </button>
           <button
             onClick={() => router.push("/dashboard")}
-            className="flex-1 h-12 flex items-center justify-center gap-2 rounded-xl bg-[#242424] text-white font-semibold text-sm active:scale-[0.98] transition-transform"
+            className="flex-1 h-14 flex items-center justify-center gap-2 rounded-xl bg-[#242424] text-white font-bold text-sm tracking-wide uppercase active:scale-[0.98] transition-transform"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Dashboard
+            <ArrowLeft className="w-4 h-4" />
+            DASHBOARD
           </button>
         </div>
       </div>
