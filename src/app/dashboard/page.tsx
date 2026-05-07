@@ -330,7 +330,7 @@ function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; acti
             );
           })
         ) : (
-          <p className="py-10 text-center text-sm text-gray-500">Tidak ada stok untuk filter ini.</p>
+          <p className="py-10 text-center text-sm text-gray-500 col-span-full">Tidak ada stok untuk filter ini.</p>
         )}
       </div>
     </div>
