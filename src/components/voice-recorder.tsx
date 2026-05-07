@@ -2,11 +2,11 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Mic, MicOff, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import type { WorkerMessage } from "@/utils/whisper-worker";
 
 interface VoiceRecorderProps {
   onTranscribed: (text: string) => void;
   onError?: (error: string) => void;
-  apiUrl?: string;
 }
 
 type RecorderState = "idle" | "recording" | "processing" | "done" | "error";
@@ -14,27 +14,57 @@ type RecorderState = "idle" | "recording" | "processing" | "done" | "error";
 export function VoiceRecorder({
   onTranscribed,
   onError,
-  apiUrl = "http://localhost:8000/transcribe",
 }: VoiceRecorderProps) {
   const [state, setState] = useState<RecorderState>("idle");
   const [transcript, setTranscript] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [modelProgress, setModelProgress] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => {
+    try {
+      const worker = new Worker(
+        new URL("@/utils/whisper-worker.ts", import.meta.url),
+        { type: "module" },
+      );
+      worker.onerror = (e) => {
+        console.error("Whisper worker error:", e);
+        setErrorMsg("Gagal memuat model AI. Coba refresh halaman.");
+        setState("error");
+      };
+      workerRef.current = worker;
+      return () => worker.terminate();
+    } catch {
+      setErrorMsg("Browser tidak mendukung fitur voice AI.");
+      setState("error");
+    }
+  }, []);
 
   const stopAll = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
     }
   }, []);
 
@@ -42,11 +72,11 @@ export function VoiceRecorder({
 
   const trackAudioLevel = (stream: MediaStream) => {
     const ctx = new AudioContext();
+    audioCtxRef.current = ctx;
     const src = ctx.createMediaStreamSource(stream);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 256;
     src.connect(analyser);
-    analyserRef.current = analyser;
 
     const data = new Uint8Array(analyser.frequencyBinCount);
     const tick = () => {
@@ -58,10 +88,39 @@ export function VoiceRecorder({
     tick();
   };
 
+  const processAudio = async (blob: Blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioCtx = new AudioContext();
+    const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+
+    const TARGET_SR = 16000;
+    let float32: Float32Array;
+
+    if (decoded.sampleRate === TARGET_SR) {
+      float32 = decoded.getChannelData(0);
+    } else {
+      const offlineCtx = new OfflineAudioContext(
+        1,
+        Math.ceil(decoded.duration * TARGET_SR),
+        TARGET_SR,
+      );
+      const src = offlineCtx.createBufferSource();
+      src.buffer = decoded;
+      src.connect(offlineCtx.destination);
+      src.start();
+      const resampled = await offlineCtx.startRendering();
+      float32 = resampled.getChannelData(0);
+    }
+
+    await audioCtx.close();
+    return float32;
+  };
+
   const startRecording = async () => {
     setErrorMsg("");
     setTranscript("");
     setElapsed(0);
+    setModelProgress(null);
     chunksRef.current = [];
 
     try {
@@ -69,7 +128,18 @@ export function VoiceRecorder({
       streamRef.current = stream;
       trackAudioLevel(stream);
 
-      const mr = new MediaRecorder(stream, { mimeType: "audio/webm;codecs=opus" });
+      // Safari doesn't support WebM — pick a supported mime type
+      const mimeType = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/aac",
+        "",
+      ].find((t) => t === "" || MediaRecorder.isTypeSupported(t)) ?? "";
+
+      const mr = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
       mediaRecorderRef.current = mr;
 
       mr.ondataavailable = (e) => {
@@ -81,24 +151,48 @@ export function VoiceRecorder({
         setState("processing");
         setAudioLevel(0);
 
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        const wavBlob = await convertToWav(blob);
-
-        const form = new FormData();
-        form.append("file", wavBlob, "audio.wav");
-
         try {
-          const res = await fetch(apiUrl, { method: "POST", body: form });
-          if (!res.ok) throw new Error(`Server error: ${res.status}`);
-          const data = await res.json();
+          const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/mp4" });
+          const audio = await processAudio(blob);
 
-          if (data.error) throw new Error(data.error);
+          const worker = workerRef.current;
+          if (!worker) throw new Error("Worker not initialized");
 
-          setTranscript(data.text);
-          setState("done");
-          onTranscribed(data.text);
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : "Gagal menghubungi server";
+          worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
+            const msg = e.data;
+            if (!msg.status) return;
+
+            if (msg.status === "loading") {
+              setModelProgress("Memuat model Whisper...");
+            } else if (msg.status === "download" && "progress" in msg) {
+              setModelProgress(
+                `Mengunduh model: ${Math.round(msg.progress as number)}%`,
+              );
+            } else if (msg.status === "ready") {
+              setModelProgress("Mentranskrip audio...");
+            } else if (msg.status === "complete" && "text" in msg) {
+              setModelProgress(null);
+              const text = msg.text as string;
+              if (text) {
+                setTranscript(text);
+                setState("done");
+                onTranscribed(text);
+              } else {
+                setErrorMsg("Tidak ada suara terdeteksi. Coba bicara lebih jelas.");
+                setState("error");
+              }
+            } else if (msg.status === "error" && "error" in msg) {
+              setModelProgress(null);
+              const errText = msg.error as string;
+              setErrorMsg(errText);
+              setState("error");
+              onError?.(errText);
+            }
+          };
+
+          worker.postMessage({ audio });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Gagal memproses audio";
           setErrorMsg(msg);
           setState("error");
           onError?.(msg);
@@ -117,8 +211,9 @@ export function VoiceRecorder({
           return e + 1;
         });
       }, 1000);
-    } catch {
-      setErrorMsg("Mikrofon tidak bisa diakses. Pastikan izin mikrofon sudah diberikan.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErrorMsg(`Mikrofon gagal: ${msg}`);
       setState("error");
     }
   };
@@ -127,8 +222,14 @@ export function VoiceRecorder({
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
     }
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
   };
 
   const reset = () => {
@@ -138,6 +239,7 @@ export function VoiceRecorder({
     setErrorMsg("");
     setElapsed(0);
     setAudioLevel(0);
+    setModelProgress(null);
   };
 
   const bars = Array.from({ length: 20 }, (_, i) => i);
@@ -224,9 +326,14 @@ export function VoiceRecorder({
           </div>
         )}
         {state === "processing" && (
-          <p className="text-sm font-semibold text-[var(--color-primary)]">
-            Memproses suara...
-          </p>
+          <div>
+            <p className="text-sm font-semibold text-[var(--color-primary)]">
+              Memproses suara...
+            </p>
+            {modelProgress && (
+              <p className="text-xs text-gray-400 mt-1">{modelProgress}</p>
+            )}
+          </div>
         )}
         {state === "done" && transcript && (
           <div className="text-center max-w-xs">
@@ -254,50 +361,4 @@ export function VoiceRecorder({
       )}
     </div>
   );
-}
-
-/**
- * Konversi Blob WebM/Opus → WAV sederhana via AudioContext decode + encode PCM.
- * Ini dibutuhkan karena model Whisper di HuggingFace pipeline-nya expect .wav
- */
-async function convertToWav(blob: Blob): Promise<Blob> {
-  const arrayBuffer = await blob.arrayBuffer();
-  const ctx = new AudioContext({ sampleRate: 16000 });
-  const decoded = await ctx.decodeAudioData(arrayBuffer);
-
-  const numChannels = 1; // mono
-  const sampleRate = 16000;
-  const samples = decoded.getChannelData(0); // ambil channel pertama
-  const length = samples.length;
-
-  const wavBuffer = new ArrayBuffer(44 + length * 2);
-  const view = new DataView(wavBuffer);
-
-  const writeStr = (offset: number, str: string) => {
-    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
-  };
-
-  writeStr(0, "RIFF");
-  view.setUint32(4, 36 + length * 2, true);
-  writeStr(8, "WAVE");
-  writeStr(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, numChannels, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * numChannels * 2, true);
-  view.setUint16(32, numChannels * 2, true);
-  view.setUint16(34, 16, true);
-  writeStr(36, "data");
-  view.setUint32(40, length * 2, true);
-
-  let offset = 44;
-  for (let i = 0; i < length; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-    offset += 2;
-  }
-
-  await ctx.close();
-  return new Blob([wavBuffer], { type: "audio/wav" });
 }

@@ -278,7 +278,7 @@ function InventoryCard({
             className="text-xl font-bold text-[#1C1B1B] leading-[25px]"
             style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
           >
-            {fish?.localName ?? entry.fishId} Grade {entry.grade}
+            {fish?.localName ?? entry.fishId}
           </p>
           <p
             className="text-xs text-[#444748] leading-[14.4px]"

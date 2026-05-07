@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, Plus, ArrowRight } from "lucide-react";
 import { useFishStore } from "@/lib/store";
 import { calculateAging, formatElapsed } from "@/lib/aging";
-import { useFishData } from "@/hooks/use-fish-data";
+import { getFishById } from "@/lib/fish-data";
 import type { StockEntry } from "@/lib/types";
 
 export default function DashboardHome() {
@@ -14,7 +14,6 @@ export default function DashboardHome() {
   const getActiveEntries = useFishStore((s) => s.getActiveEntries);
   const getMarkedEntries = useFishStore((s) => s.getMarkedEntries);
   const entries = useFishStore((s) => s.entries);
-  const { getFishById } = useFishData();
 
   useEffect(() => {
     import("@/lib/supabase").then(({ supabase }) => {
@@ -65,11 +64,11 @@ export default function DashboardHome() {
   const userName = currentUser?.name?.split(" ")[0] ?? "User";
 
   if (currentRole === "admin_gudang") {
-    return <AdminDashboard stats={stats} markedCount={markedCount} userName={userName} activeEntries={activeEntries} getFishById={getFishById} />;
+    return <AdminDashboard stats={stats} markedCount={markedCount} userName={userName} activeEntries={activeEntries} />;
   }
 
   return (
-    <OwnerDashboard stats={stats} activeEntries={activeEntries} userName={userName} getFishById={getFishById} />
+    <OwnerDashboard stats={stats} activeEntries={activeEntries} userName={userName} />
   );
 }
 
@@ -90,7 +89,7 @@ function getTimeGreeting() {
   return "Malam";
 }
 
-function AdminDashboard({ stats, markedCount, userName, activeEntries, getFishById }: { stats: Stats; markedCount: number; userName: string; activeEntries: StockEntry[]; getFishById: (id: string) => { localName: string; name: string; category: string } | undefined }) {
+function AdminDashboard({ stats, markedCount, userName, activeEntries }: { stats: Stats; markedCount: number; userName: string; activeEntries: StockEntry[] }) {
   const recentEntries = useMemo(() => {
     return [...activeEntries]
       .sort((a, b) => new Date(b.enteredAt).getTime() - new Date(a.enteredAt).getTime())
@@ -135,8 +134,8 @@ function AdminDashboard({ stats, markedCount, userName, activeEntries, getFishBy
       </Link>
 
       <div className="grid grid-cols-2 gap-2 md:gap-3">
-        <BentoCard label="TOTAL STOK" value={stats.totalKg === 0 ? "0" : (stats.totalKg / 1000).toFixed(1)} unit="Ton" />
-        <BentoCard label="MASUK HARI INI" value={stats.todayKg === 0 ? "0" : String(Math.round(stats.todayKg))} unit="Kg" />
+        <BentoCard label="TOTAL STOK" value={(stats.totalKg / 1000).toFixed(1)} unit="Ton" />
+        <BentoCard label="MASUK HARI INI" value={String(stats.todayKg)} unit="Kg" />
       </div>
 
       <div
@@ -224,7 +223,7 @@ function ActivityItem({ name, detail, weight, iconType }: { name: string; detail
   );
 }
 
-function OwnerDashboard({ stats, activeEntries, userName, getFishById }: { stats: Stats; activeEntries: StockEntry[]; userName: string; getFishById: (id: string) => { localName: string; name: string; category: string } | undefined }) {
+function OwnerDashboard({ stats, activeEntries, userName }: { stats: Stats; activeEntries: StockEntry[]; userName: string }) {
   const [activeFilter, setActiveFilter] = useState<"all" | "fresh" | "warning" | "critical">("all");
   const markForExit = useFishStore((s) => s.markForExit);
   const unmarkForExit = useFishStore((s) => s.unmarkForExit);
@@ -315,7 +314,6 @@ function OwnerDashboard({ stats, activeEntries, userName, getFishById }: { stats
                 qrCode={entry.qrCode ?? "-"}
                 adminName={entry.enteredByName || (entry.enteredBy === "admin_gudang" ? "Admin" : "Pemilik")}
                 status={aging.status as 'fresh' | 'warning' | 'critical'}
-                grade={entry.grade}
                 timeRemaining={formatElapsed(aging.remainingHours)}
                 freshnessPercent={100 - aging.percentage}
                 weightKg={entry.weightKg}
@@ -339,12 +337,11 @@ function OwnerDashboard({ stats, activeEntries, userName, getFishById }: { stats
   );
 }
 
-function OwnerStockCard({ name, qrCode, adminName, status, grade, timeRemaining, freshnessPercent, weightKg, enteredAt, isMarked, onToggleMark }: {
+function OwnerStockCard({ name, qrCode, adminName, status, timeRemaining, freshnessPercent, weightKg, enteredAt, isMarked, onToggleMark }: {
   name: string;
   qrCode: string;
   adminName: string;
   status: 'fresh' | 'warning' | 'critical';
-  grade: string;
   timeRemaining: string;
   freshnessPercent: number;
   weightKg: number;
@@ -384,7 +381,7 @@ function OwnerStockCard({ name, qrCode, adminName, status, grade, timeRemaining,
 
       <div className="flex flex-col gap-1">
         <div className="flex justify-between items-center">
-          <span className="text-[12px] text-[#1C1B1B] leading-[14.4px]">Grade {grade}</span>
+          <span className="text-[12px] text-[#1C1B1B] leading-[14.4px]">Sisa Waktu Segar</span>
           <span className="text-[12px] font-bold text-right leading-[14.4px]" style={{ color: config.bar }}>{timeRemaining}</span>
         </div>
         <div className="w-full bg-[#E5E2E1] rounded-[12px] h-2 overflow-hidden">

@@ -35,7 +35,7 @@ import { parseVoiceTranscript, matchFishFromKeywords } from "@/utils/parse-voice
 // ─── Konstanta ───────────────────────────────────────────────────────────────
 
 const TOTAL_STEPS = 5;
-const VOICE_API_URL = process.env.NEXT_PUBLIC_VOICE_API_URL ?? "http://localhost:8000/transcribe";
+
 
 // ─── Tipe mode input ─────────────────────────────────────────────────────────
 
@@ -430,7 +430,6 @@ export default function CatatMasukPage() {
             <VoiceRecorder
               onTranscribed={handleTranscribed}
               onError={(e) => setVoiceError(e)}
-              apiUrl={VOICE_API_URL}
             />
 
             {voiceError && (
