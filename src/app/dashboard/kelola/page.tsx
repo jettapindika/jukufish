@@ -28,7 +28,7 @@ export default function KelolaIkanPage() {
   if (currentRole !== "pemilik") return null;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-128px)]">
+    <div className="flex flex-col min-h-[calc(100vh-128px)] md:max-w-2xl md:mx-auto md:w-full">
       <div className="flex flex-col gap-4 px-4 md:px-0 pt-4">
         <h1
           className="text-[32px] font-bold text-[#0E0F0F] tracking-[-0.64px] leading-[38.4px]"
@@ -149,7 +149,7 @@ function TimTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4 md:max-w-[600px]">
+    <div className="flex flex-col gap-4">
       <div
         className="flex flex-col gap-2 rounded-lg bg-white p-4"
         style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.05), 0px 4px 4px rgba(0,0,0,0.05), 0px 10px 10px rgba(0,0,0,0.03)" }}
@@ -447,7 +447,7 @@ function KategoriTab() {
   const isOverridden = (id: string) => customIds.has(id);
 
   return (
-    <div className="flex flex-col gap-6 relative md:max-w-[600px]">
+    <div className="flex flex-col gap-6 relative">
       <div className="flex flex-col gap-1">
         <h2
           className="text-[24px] font-bold text-[#1C1B1B] leading-[28.8px] tracking-[-0.24px]"
@@ -737,7 +737,7 @@ function IkanTab() {
   const isDefaultFish = (id: string) => DEFAULT_FISH.some((f) => f.id === id) && !customFishIds.has(id);
 
   return (
-    <div className="flex flex-col gap-6 relative md:max-w-[600px]">
+    <div className="flex flex-col gap-6 relative">
       <div className="flex flex-col gap-1">
         <h2
           className="text-[24px] font-bold text-[#1C1B1B] leading-[28.8px] tracking-[-0.24px]"
@@ -940,7 +940,7 @@ function ShelfLifeTab() {
   }, [allFish]);
 
   return (
-    <div className="flex flex-col gap-5 md:max-w-[600px]">
+    <div className="flex flex-col gap-5">
       <p className="text-xs text-[#444748]">
         Atur berapa jam ikan bisa disimpan di cold storage sebelum dianggap kritis.
       </p>
